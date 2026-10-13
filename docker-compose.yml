@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-automan}
+      POSTGRES_USER: ${POSTGRES_USER:-automan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  api:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?Set ADMIN_API_KEY in .env}
+      DATABASE_URL: postgres://${POSTGRES_USER:-automan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-automan}?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      MEDIA_DIR: /app/media
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - private_media:/app/media
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+volumes:
+  postgres_data:
+  redis_data:
+  private_media:
