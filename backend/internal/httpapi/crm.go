@@ -119,7 +119,7 @@ func (a API) createVisit(w http.ResponseWriter, r *http.Request) {
 	if !parse(w, r, &v) {
 		return
 	}
-	if !validLead(&v) {
+	if !validLead(&v.leadInput) {
 		respond(w, 422, map[string]string{"error": "invalid contact details"})
 		return
 	}
