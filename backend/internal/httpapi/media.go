@@ -86,7 +86,7 @@ func fileFromForm(w http.ResponseWriter, r *http.Request, allowed map[string]str
 		// Reject malformed JPEG/PNG contents rather than trusting content-type sniffing.
 		// WebP has a RIFF container; complete decode requires an external decoder.
 		if mime == "image/jpeg" || mime == "image/png" {
-			if _, e = image.DecodeConfig(io.NewSectionReader(part, 0, h.Size)); e != nil {
+			if _, _, e = image.DecodeConfig(io.NewSectionReader(part, 0, h.Size)); e != nil {
 				err = errors.New("invalid image data")
 				return
 			}
