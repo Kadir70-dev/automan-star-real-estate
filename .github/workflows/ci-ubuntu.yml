@@ -1,0 +1,68 @@
+name: Automan Ubuntu CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source presence
+        id: source
+        shell: bash
+        run: |
+          if [[ -f backend/go.mod && -f frontend/package.json && -f docker-compose.yml ]]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo '::warning::Application source files have not been imported into this repository yet.'
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-go@v5
+        if: steps.source.outputs.ready == 'true'
+        with:
+          go-version-file: backend/go.mod
+      - uses: actions/setup-node@v4
+        if: steps.source.outputs.ready == 'true'
+        with:
+          node-version: '22'
+      - name: Source regressions
+        if: steps.source.outputs.ready == 'true'
+        run: bash scripts/verify.sh
+      - name: Go tests and vet
+        if: steps.source.outputs.ready == 'true'
+        working-directory: backend
+        run: |
+          go mod tidy
+          go test ./...
+          go vet ./...
+      - name: Frontend build
+        if: steps.source.outputs.ready == 'true'
+        working-directory: frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Docker integration smoke tests
+        if: steps.source.outputs.ready == 'true'
+        env:
+          POSTGRES_PASSWORD: ci-local-db-password-only
+          ADMIN_API_KEY: ci-local-admin-key-only-not-production
+        run: |
+          docker compose up --build -d
+          for i in $(seq 1 36); do
+            if curl -fsS http://localhost:8080/health/ready; then break; fi
+            sleep 5
+          done
+          bash scripts/smoke.sh
+      - name: Docker diagnostics
+        if: always() && steps.source.outputs.ready == 'true'
+        run: docker compose ps && docker compose logs --tail=80 || true
+      - name: Cleanup
+        if: always() && steps.source.outputs.ready == 'true'
+        run: docker compose down -v || true
