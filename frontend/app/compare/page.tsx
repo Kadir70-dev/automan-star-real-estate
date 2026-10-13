@@ -1,0 +1,1 @@
+import CollectionBoard from '@/components/CollectionBoard';export default function Page(){return <CollectionBoard compare={true}/>}
