@@ -1,6 +1,7 @@
 import MobileContactBar from '@/components/MobileContactBar';
 import type { Metadata } from 'next';
 import './globals.css';
+import './seo-guide.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LuxuryPreloader from '@/components/LuxuryPreloader';
