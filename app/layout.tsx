@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Bodoni_Moda, Manrope } from 'next/font/google';
 import './globals.css';
 import './design-system.css';
+import './enquiry-consent.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConsultationPopup from '@/components/ConsultationPopup';

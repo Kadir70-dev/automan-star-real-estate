@@ -7,4 +7,11 @@
   <input type="text" name="country"><input type="text" name="interest"><input type="text" name="submitted_at">
   <input type="text" name="source_url"><input type="text" name="consent">
 </form>
+<!-- General property enquiries: Next.js submits this form server-side after validation. -->
+<form name="enquiry" data-netlify="true" hidden>
+  <input type="text" name="name"><input type="email" name="email">
+  <textarea name="message"></textarea><input type="text" name="property">
+  <input type="text" name="submitted_at"><input type="text" name="source_url">
+  <input type="text" name="consent">
+</form>
 </body></html>
