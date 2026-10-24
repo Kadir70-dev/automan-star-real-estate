@@ -1,0 +1,57 @@
+/* Focused, accessible editorial content for service landing pages. */
+.seo-guide {
+  max-width: 1110px;
+  margin-top: 76px;
+  padding-top: 48px;
+  border-top: 1px solid var(--line, #e3e1dc);
+}
+.seo-guide h2 {
+  max-width: 780px;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(27px, 3.3vw, 42px);
+  line-height: 1.2;
+  letter-spacing: -.04em;
+  margin: 0 0 18px;
+}
+.seo-guide > p {
+  max-width: 830px;
+  color: #484a49;
+  line-height: 1.85;
+  font-size: 15px;
+  margin: 0 0 25px;
+}
+.seo-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 36px 0;
+}
+.seo-guide-grid > div {
+  background: #fff;
+  border: 1px solid #dedbd2;
+  padding: 27px;
+}
+.seo-guide-grid h3 {
+  font: 650 17px/1.4 'Manrope', sans-serif;
+  letter-spacing: -.015em;
+  margin: 0 0 13px;
+}
+.seo-guide-grid p {
+  color: #5b5d5b;
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 0;
+}
+.seo-guide a {
+  color: #6a5432;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.seo-guide a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@media (max-width: 800px) {
+  .seo-guide { margin-top: 48px; padding-top: 34px; }
+  .seo-guide-grid { grid-template-columns: 1fr; }
+}
