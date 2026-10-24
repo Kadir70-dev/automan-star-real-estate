@@ -1,1 +1,1 @@
-import PhaseOneAdmin from '@/components/PhaseOneAdmin';export default function Page(){return <PhaseOneAdmin kind='overview'/>}
+import PhaseOneAdmin from '@/components/PhaseOneAdmin';export const metadata={title:'Team Dashboard',robots:{index:false,follow:false}};export default function Page(){return <PhaseOneAdmin kind='overview'/>}
