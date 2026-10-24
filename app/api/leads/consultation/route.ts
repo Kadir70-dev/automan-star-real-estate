@@ -40,7 +40,9 @@ async function toNetlifyForms(lead:Lead,siteOrigin:string){
  if(process.env.LEAD_NETLIFY_FORMS==='off')return null;
  const onNetlify=Boolean(process.env.NETLIFY||process.env.SITE_ID||process.env.DEPLOY_URL||process.env.URL);
  if(!onNetlify&&!process.env.LEAD_FORMS_ORIGIN)return null;
- const base=process.env.LEAD_FORMS_ORIGIN||process.env.DEPLOY_URL||siteOrigin;
+ // Production must use the stable site address, not an older draft DEPLOY_URL.
+ const preview=['deploy-preview','branch-deploy'].includes(process.env.CONTEXT||'');
+ const base=process.env.LEAD_FORMS_ORIGIN||(preview?process.env.DEPLOY_URL:process.env.URL)||siteOrigin;
  const body=new URLSearchParams({'form-name':'consultation',name:lead.name,email:lead.email,phone:lead.phoneE164,country:lead.country,interest:lead.interest,submitted_at:lead.submittedAt,source_url:lead.sourceUrl,consent:'yes'});
  const r=await fetch(base.replace(/\/$/,'')+'/__forms.html',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(8000)});
  if(r.status>=200&&r.status<400)return true;
