@@ -1,0 +1,1 @@
+import PhaseOneAdmin from '@/components/PhaseOneAdmin';export default function Page(){return <PhaseOneAdmin kind='documents'/>}

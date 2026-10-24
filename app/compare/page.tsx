@@ -1,0 +1,1 @@
+import CollectionBoard from '@/components/CollectionBoard';import {NOINDEX} from '@/lib/seo';export const metadata={title:'Compare Properties',robots:NOINDEX};export default function Page(){return <CollectionBoard compare={true}/>}

@@ -1,0 +1,1 @@
+import Link from 'next/link';import {MessageCircle,Search} from 'lucide-react';export default function MobileContactBar(){return <nav className="final-mobile-cta" aria-label="Quick actions"><Link href="/properties"><Search size={17}/> Explore</Link><Link href="/contact"><MessageCircle size={17}/> Enquire</Link></nav>}
