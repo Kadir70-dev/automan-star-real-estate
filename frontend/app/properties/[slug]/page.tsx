@@ -4,7 +4,30 @@ import Enquiry from '@/components/Enquiry';
 import LivePropertyGallery from '@/components/LivePropertyGallery';
 type Detail={id:string;slug:string;title:string;description:string;emirate:string;community:string;category:string;listing_type:string;construction_status:string;price_aed:string;reference_code:string;bedrooms:number|null;bathrooms:number|null;area_sqft:number|null;media:{id:string;alt:string;is_cover:boolean}[]};
 export const dynamic='force-dynamic';
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const {slug}=await params;return {title:`${slug.replaceAll('-',' ')} | Automan Star`};}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}){
+ const {slug}=await params;
+ const base=process.env.BACKEND_INTERNAL_URL||'http://localhost:8080';
+ try {
+  // The public backend route returns published properties only.
+  const res=await fetch(`${base}/api/v1/properties/${encodeURIComponent(slug)}`,{cache:'no-store',signal:AbortSignal.timeout(5000)});
+  if(!res.ok) throw new Error('Published listing unavailable');
+  const p=await res.json() as Detail;
+  if(!p.title||!p.slug||!p.community||!p.emirate) throw new Error('Incomplete listing');
+  const title=`${p.title} in ${p.community}, ${p.emirate}`;
+  const description=(p.description?.trim()||`Explore ${p.title} in ${p.community}, ${p.emirate}. Request verified details and a viewing with Automan Star Real Estate.`).replace(/\s+/g,' ').slice(0,155);
+  const canonical=`/properties/${encodeURIComponent(p.slug)}`;
+  return {
+   title,
+   description,
+   alternates:{canonical},
+   openGraph:{title,description,url:canonical,type:'article' as const},
+   robots:{index:true,follow:true},
+  };
+ } catch {
+  // Do not let transient API failures create crawlable, thin property pages.
+  return {title:'Property details unavailable',robots:{index:false,follow:false}};
+ }
+}
 export default async function PropertyDetail({params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
  const base=process.env.BACKEND_INTERNAL_URL||'http://localhost:8080';
