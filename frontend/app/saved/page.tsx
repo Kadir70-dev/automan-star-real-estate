@@ -1,1 +1,1 @@
-import CollectionBoard from '@/components/CollectionBoard';export default function Page(){return <CollectionBoard compare={false}/>}
+import CollectionBoard from '@/components/CollectionBoard';export const metadata={title:'Saved Properties',robots:{index:false,follow:false}};export default function Page(){return <CollectionBoard compare={false}/>}
