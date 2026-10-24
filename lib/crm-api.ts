@@ -1,0 +1,1 @@
+export async function sendCRM(kind:'leads'|'visits',payload:object){const r=await fetch('/api/crm/'+kind,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let body;try{body=await r.json()}catch{body={error:'Unexpected server response'}};if(!r.ok)throw new Error(body.error||'Unable to submit request');return body;}
