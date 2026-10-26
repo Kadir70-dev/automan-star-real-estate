@@ -219,3 +219,9 @@
 
 .brand-logo{display:block;height:62px;width:auto;object-fit:contain}
 @media(max-width:800px){.brand-logo{height:50px}}
+
+/* CMS portal: keep the public design intact while isolating the admin workspace. */
+body:has([data-cms-portal]) .site-header,
+body:has([data-cms-portal]) .ds-footer,
+body:has([data-cms-portal]) .mobile-contact-bar { display: none !important; }
+body:has([data-cms-portal]) #main { max-width: none; padding: 0; }
