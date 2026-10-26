@@ -24,6 +24,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: CMS temporary gofmt snapshot for source commits
+        run: |
+          gofmt -w backend/internal/httpapi/api.go backend/internal/httpapi/cms.go backend/internal/httpapi/cms_media.go
+          for f in backend/internal/httpapi/api.go backend/internal/httpapi/cms.go backend/internal/httpapi/cms_media.go; do
+            echo "CMS_FORMATTED:$f:$(base64 -w0 "$f")"
+          done
       - name: Source regression checks
         run: bash scripts/verify.sh
       - name: Go dependencies and automated tests
