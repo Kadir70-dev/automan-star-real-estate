@@ -4,7 +4,7 @@ import Link from 'next/link';
 type Page={key:string;path:string;title:string;draft_revision:number;published_revision:number|null};
 type Detail={key:string;path:string;title:string;draft:Record<string,unknown>;draft_revision:number;published_revision:number|null};
 type Staff={id:string;name:string;role:string};
-const home={heading:'Buy well in Dubai.',description:'Apartments, villas, off-plan and commercial property, advised from our office in Business Bay.',primary_button:{label:'Browse properties',href:'/properties'}};
+const home={heading:'Buy well in Dubai.',description:'Apartments, villas, off-plan and commercial property, advised from our office in Business Bay.',primary_button:{label:'Browse properties',href:'/properties'},seo:{title:'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay',description:'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.'}};
 async function api(url:string,init?:RequestInit){
  const res=await fetch(url,{cache:'no-store',...init});
  const data=await res.json().catch(()=>({}));
