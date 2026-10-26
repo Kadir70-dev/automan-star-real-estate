@@ -40,7 +40,7 @@ export default async function Home(){const cms=await getCms("home");return <main
 
  <section className="home-services" aria-labelledby="services-title">
   <div className="container home-services-grid">
-   <div className="home-services-image"><Image data-cms-image="services.image" unoptimized src={cmsText(cms,'services.image','https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=80')} alt="Living room with floor-to-ceiling windows" fill sizes="(max-width: 900px) 100vw, 45vw"/></div>
+   <div className="home-services-image"><Image data-cms-image="services.image" unoptimized src={cmsText(cms,'services.image','https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=80')} alt={cmsText(cms,'services.alt','Living room with floor-to-ceiling windows')} fill sizes="(max-width: 900px) 100vw, 45vw"/></div>
    <div>
     <h2 id="services-title" data-cms-field="services.title">{cmsText(cms,'services.title','What we help you buy')}</h2>
     <ul className="home-services-list">{services.map(s=><li key={s.href}><Link href={s.href}><strong data-cms-field={`services.${s.key}.title`}>{cmsText(cms,`services.${s.key}.title`,s.title)}</strong><span data-cms-field={`services.${s.key}.copy`}>{cmsText(cms,`services.${s.key}.copy`,s.copy)}</span></Link></li>)}</ul>
@@ -52,7 +52,7 @@ export default async function Home(){const cms=await getCms("home");return <main
   <div className="container">
    <div className="home-head"><h2 id="areas-title" data-cms-field="areas.title">{cmsText(cms,'areas.title','Where our clients buy')}</h2></div>
    <div className="home-areas-grid">{communities.map(c=><Link key={c.name} className="home-area" href={'/properties?location='+encodeURIComponent(c.name)}>
-    <Image data-cms-image={`areas.${communities.indexOf(c)}.image`} unoptimized src={cmsText(cms,`areas.${communities.indexOf(c)}.image`,c.image)} fill alt={c.name} sizes="(max-width: 700px) 100vw, 33vw"/>
+    <Image data-cms-image={`areas.${communities.indexOf(c)}.image`} unoptimized src={cmsText(cms,`areas.${communities.indexOf(c)}.image`,c.image)} fill alt={cmsText(cms,`areas.${communities.indexOf(c)}.alt`,c.name)} sizes="(max-width: 700px) 100vw, 33vw"/>
     <span data-cms-field={`areas.${communities.indexOf(c)}.title`}>{cmsText(cms,`areas.${communities.indexOf(c)}.title`,c.name)}</span>
    </Link>)}</div>
   </div>

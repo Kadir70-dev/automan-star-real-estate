@@ -3,13 +3,15 @@ export type CmsPageDef={slug:string;name:string;path:string;fields:CmsField[]};
 const field=(key:string,label:string,type:CmsField['type']='text'):CmsField=>({key,label,type});
 const home:CmsField[]=[
  field('hero.title','Hero headline'),field('hero.description','Hero description','textarea'),
- field('hero.image','Hero first image','image'),field('hero.image2','Hero second image','image'),field('hero.image3','Hero third image','image'),
+ field('hero.image','Hero first image','image'),field('hero.alt1','First image description'),
+ field('hero.image2','Hero second image','image'),field('hero.alt2','Second image description'),
+ field('hero.image3','Hero third image','image'),field('hero.alt3','Third image description'),
  field('hero.buy_cta','Browse properties button'),field('hero.contact_cta','Consultation button'),
  field('collection.title','Collection heading'),field('collection.cta','Collection button'),field('collection.note','Concept listings disclosure','textarea'),
- field('services.title','Services heading'),field('services.image','Services image','image'),
+ field('services.title','Services heading'),field('services.image','Services image','image'),field('services.alt','Services image description'),
  ...[['buy','Ready homes'],['offplan','Off-plan'],['commercial','Commercial']].flatMap(([key,label])=>[field('services.'+key+'.title',label+' title'),field('services.'+key+'.copy',label+' description','textarea')]),
  field('areas.title','Communities heading'),
- ...['Downtown Dubai','Dubai Marina','Palm Jumeirah'].flatMap((name,i)=>[field('areas.'+i+'.title',name+' display name'),field('areas.'+i+'.image',name+' image','image')]),
+ ...['Downtown Dubai','Dubai Marina','Palm Jumeirah'].flatMap((name,i)=>[field('areas.'+i+'.title',name+' display name'),field('areas.'+i+'.image',name+' image','image'),field('areas.'+i+'.alt',name+' image description')]),
  field('team.title','Leadership heading'),field('team.office','Team office address','textarea'),
  ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')]),
  field('tour.title','3D tour heading'),field('tour.description','3D tour description','textarea'),field('tour.cta','3D tour button')
@@ -17,7 +19,7 @@ const home:CmsField[]=[
 export const CMS_PAGES:CmsPageDef[]=[
  {slug:'home',name:'Homepage',path:'/',fields:home},
  {slug:'about',name:'About Us',path:'/about',fields:[
-  field('about.heading','Page heading'),field('about.image','About image','image'),field('about.title','Story heading'),
+  field('about.heading','Page heading'),field('about.image','About image','image'),field('about.alt','About image description'),field('about.title','Story heading'),
   field('about.copy','Company story','textarea'),field('about.secondary_copy','Second story paragraph','textarea'),field('about.cta','Contact button'),
   field('about.leadership_title','Leadership heading'),
   ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')])]},
@@ -34,11 +36,11 @@ export const CMS_PAGES:CmsPageDef[]=[
   ])
  ]},
  {slug:'site',name:'Global Settings',path:'/',fields:[
-  field('header.logo','Header logo URL','image'),field('header.favicon','Favicon URL','image'),
+  field('header.logo','Header logo URL','image'),field('header.logo_alt','Logo image description'),field('header.favicon','Favicon URL','image'),
   field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.locality','Area / locality'),field('business.region','Emirate'),field('business.phone','Telephone'),
-  field('footer.heading','Footer headline','textarea'),field('footer.cta','Footer button'),field('footer.email','Contact email'),
+  field('footer.heading','Footer headline','textarea'),field('footer.cta','Footer button'),field('footer.cta.href','Footer button destination','link'),field('footer.email','Contact email'),
   field('social.linkedin','LinkedIn URL','link'),field('social.instagram','Instagram URL','link'),
-  ...[['properties','Properties'],['buy','Buy'],['off-plan','Off-plan'],['commercial','Commercial'],['experience','3D residence'],['about','About'],['contact','Contact']].map(([key,label])=>field('nav.'+key,'Menu: '+label)),
+  ...[['properties','Properties'],['buy','Buy'],['off-plan','Off-plan'],['commercial','Commercial'],['experience','3D residence'],['about','About'],['contact','Contact'],['privacy','Privacy Policy']].flatMap(([key,label])=>[field('nav.'+key,'Menu: '+label),field('nav.'+key+'.href','Menu link: '+label,'link')]),
   ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')])
  ]}
 ];

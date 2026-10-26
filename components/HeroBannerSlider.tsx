@@ -7,8 +7,8 @@ const defaultSlides=[
  {alt:'Dubai Marina towers along the water',image:'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=2400&q=80'},
  {alt:'Contemporary villa with a private pool',image:'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=2400&q=80'},
 ];
-export default function HeroBannerSlider({primaryImage,secondImage,thirdImage}:{primaryImage?:string;secondImage?:string;thirdImage?:string}){
- const slides=defaultSlides.map((slide,i)=>({...slide,image:[primaryImage,secondImage,thirdImage][i]||slide.image}));
+export default function HeroBannerSlider({primaryImage,secondImage,thirdImage,primaryAlt,secondAlt,thirdAlt}:{primaryImage?:string;secondImage?:string;thirdImage?:string;primaryAlt?:string;secondAlt?:string;thirdAlt?:string}){
+ const slides=defaultSlides.map((slide,i)=>({...slide,image:[primaryImage,secondImage,thirdImage][i]||slide.image,alt:[primaryAlt,secondAlt,thirdAlt][i]||slide.alt}));
  const [index,setIndex]=useState(0);
  const [paused,setPaused]=useState(false);
  const [reduced,setReduced]=useState(true);

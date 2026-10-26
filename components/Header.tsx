@@ -16,12 +16,12 @@ export default function Header({site}:{site?:CmsDocument}={}){
  const isActive=(href:string)=>pathname===href||pathname.startsWith(href+'/');
  return <header className={'site-header ds-header'+(scrolled?' header-scrolled':'')+(open?' header-open':'')}>
   <div className="nav-inner container">
-   <Link className="brand" href="/" onClick={()=>setOpen(false)} aria-label="AMS Realty, Automan Star Real Estate home"><Image className="brand-logo"  src={site?.fields['header.logo']||'/saudlogo-nav-mark.png'} alt="AMS Realty" width={223} height={129} priority unoptimized/></Link>
+   <Link className="brand" href="/" onClick={()=>setOpen(false)} aria-label="AMS Realty, Automan Star Real Estate home"><Image className="brand-logo"  src={site?.fields['header.logo']||'/saudlogo-nav-mark.png'} alt={site?.fields['header.logo_alt']||'AMS Realty'} width={223} height={129} priority unoptimized/></Link>
    <nav id="main-navigation" className={'navigation'+(open?' open':'')} aria-label="Primary navigation">
-    {nav.map(([href,name])=><Link key={href} href={href} onClick={()=>setOpen(false)} className={isActive(href)?'active':''} aria-current={isActive(href)?'page':undefined}>{site?.fields['nav.'+href.substring(1)]||name}</Link>)}
-    <Link href="/contact" className="nav-mobile-contact" onClick={()=>setOpen(false)}>{site?.fields['nav.contact']||'Contact'}</Link>
+    {nav.map(([href,name])=><Link key={href} href={site?.fields['nav.'+href.substring(1)+'.href']||href} onClick={()=>setOpen(false)} className={isActive(href)?'active':''} aria-current={isActive(href)?'page':undefined}>{site?.fields['nav.'+href.substring(1)]||name}</Link>)}
+    <Link href={site?.fields['nav.contact.href']||'/contact'} className="nav-mobile-contact" onClick={()=>setOpen(false)}>{site?.fields['nav.contact']||'Contact'}</Link>
    </nav>
-   <Link href="/contact" className="ds-btn ds-btn-line nav-cta">Contact</Link>
+   <Link href={site?.fields['nav.contact.href']||'/contact'} className="ds-btn ds-btn-line nav-cta">Contact</Link>
    <button className="mobile-toggle" onClick={()=>setOpen(!open)} aria-controls="main-navigation" aria-expanded={open} aria-label={open?'Close menu':'Open menu'}>{open?<X/>:<Menu/>}</button>
   </div>
  </header>;

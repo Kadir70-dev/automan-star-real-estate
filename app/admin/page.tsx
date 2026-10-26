@@ -107,7 +107,17 @@ export default function AdminStudio(){
  <option value="square">Center crop 1:1 (max 2400px, WebP)</option>
  </select></label>
  <label>Upload new image<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e=>{const file=e.target.files?.[0];if(file)void uploadMedia(file);e.target.value=''}}/></label>
- <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12}}>{media.map(m=><div key={m.id} style={{border:'1px solid #e5e6e1',padding:10,borderRadius:8}}><img src={m.url} alt={m.alt_text||m.filename} style={{width:'100%',height:105,objectFit:'cover',borderRadius:5}}/><p className="cms-muted" style={{overflowWrap:'anywhere'}}>{m.filename}</p><div className="cms-actions"><button className="cms-button secondary" disabled={!activeImageField||busy} type="button" onClick={()=>{setField(activeImageField,m.url);setMessage('Image selected for '+activeImageField+'. Publish to make it live.')}}>Use image</button><button className="cms-button secondary" type="button" onClick={()=>navigator.clipboard.writeText(m.url)}>Copy URL</button></div><label style={{marginTop:12}}>Image description (alt text)<input value={altDrafts[m.id]??m.alt_text} maxLength={300} onChange={e=>setAltDrafts(d=>({...d,[m.id]:e.target.value}))}/></label><button className="cms-button secondary" disabled={busy} onClick={()=>void saveMediaAlt(m.id)}>Save alt text</button></div>)}</div>
+ <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12}}>{media.map(m=><div key={m.id} style={{border:'1px solid #e5e6e1',padding:10,borderRadius:8}}><img src={m.url} alt={m.alt_text||m.filename} style={{width:'100%',height:105,objectFit:'cover',borderRadius:5}}/><p className="cms-muted" style={{overflowWrap:'anywhere'}}>{m.filename}</p><div className="cms-actions"><button className="cms-button secondary" disabled={!activeImageField||busy} type="button" onClick={()=>{
+ const altFields:Record<string,string>={
+  'hero.image':'hero.alt1','hero.image2':'hero.alt2','hero.image3':'hero.alt3',
+  'services.image':'services.alt','about.image':'about.alt',
+  'areas.0.image':'areas.0.alt','areas.1.image':'areas.1.alt','areas.2.image':'areas.2.alt',
+  'header.logo':'header.logo_alt'
+ };
+ const altKey=altFields[activeImageField];
+ setDraft(d=>({...d,fields:{...d.fields,[activeImageField]:m.url,...(altKey&&m.alt_text?{[altKey]:m.alt_text}:{})}}));
+ setMessage('Image selected for '+activeImageField+'. Publish to make it live.');
+}}>Use image</button><button className="cms-button secondary" type="button" onClick={()=>navigator.clipboard.writeText(m.url)}>Copy URL</button></div><label style={{marginTop:12}}>Image description (alt text)<input value={altDrafts[m.id]??m.alt_text} maxLength={300} onChange={e=>setAltDrafts(d=>({...d,[m.id]:e.target.value}))}/></label><button className="cms-button secondary" disabled={busy} onClick={()=>void saveMediaAlt(m.id)}>Save alt text</button></div>)}</div>
  </div>
  <div className="cms-panel"><h2>SEO &amp; metadata</h2>
  <label>SEO title<input maxLength={140} value={draft.seo.title??''} onChange={e=>setSEO('title',e.target.value)}/></label>
