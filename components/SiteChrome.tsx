@@ -1,6 +1,6 @@
+'use client';
 import type {CmsDocument} from '@/lib/cms';
 import CmsInlineEditor from '@/components/CmsInlineEditor';
-'use client';
 import {usePathname} from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
