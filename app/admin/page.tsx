@@ -1,0 +1,73 @@
+'use client';
+import {useCallback,useEffect,useMemo,useState} from 'react';
+import Link from 'next/link';
+import {CMS_PAGES} from '@/lib/cms-schema';
+import type {CmsDocument} from '@/lib/cms';
+import './admin.css';
+
+type Staff={id:string;name:string;role:string};
+type PageResponse={slug:string;draft:CmsDocument;published:CmsDocument;draft_revision:number;published_revision:number};
+type Version={version:number;created_at:string};
+function emptyPage(slug:string):PageResponse{return {slug,draft:{fields:{},seo:{title:'',description:'',og_image:'',canonical:'',robots:''}},published:{fields:{},seo:{title:'',description:'',og_image:'',canonical:'',robots:''}},draft_revision:0,published_revision:0}}
+async function readJSON(r:Response){const j=await r.json();if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+export default function AdminStudio(){
+ const[staff,setStaff]=useState<Staff|null>(null),[loaded,setLoaded]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[slug,setSlug]=useState('home'),[page,setPage]=useState<PageResponse>(emptyPage('home')),[draft,setDraft]=useState<CmsDocument>(emptyPage('home').draft),[versions,setVersions]=useState<Version[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
+ const selected=useMemo(()=>CMS_PAGES.find(p=>p.slug===slug)!,[slug]);
+ const loadPage=useCallback(async(p:string)=>{
+  const result=await readJSON(await fetch('/api/cms/admin/'+p,{cache:'no-store'})) as PageResponse;
+  setPage(result);setDraft(result.draft);setVersions([]);
+  const versionsRes=await fetch('/api/cms/admin/'+p+'/versions',{cache:'no-store'});
+  if(versionsRes.ok)setVersions(((await versionsRes.json()) as {data:Version[]}).data);
+ },[]);
+ useEffect(()=>{let active=true;(async()=>{try{const r=await fetch('/api/staff/me',{cache:'no-store'});if(r.ok&&active){const s=(await r.json()).staff as Staff;setStaff(s)}}catch{}finally{if(active)setLoaded(true)}})();return()=>{active=false}},[]);
+ useEffect(()=>{if(staff?.role!=='admin')return;setMessage('');setError('');void loadPage(slug).catch(e=>setError(e.message))},[slug,staff?.role,loadPage]);
+ async function login(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{
+  await readJSON(await fetch('/api/staff/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})}));
+  setPassword('');const me=await readJSON(await fetch('/api/staff/me',{cache:'no-store'}));
+  setStaff(me.staff);
+ }catch(e){setError(e instanceof Error?e.message:'Login failed')}finally{setBusy(false)}}
+ async function logout(){await fetch('/api/staff/logout',{method:'POST'});setStaff(null);setPassword('');setMessage('')}
+ function setField(key:string,value:string){setDraft(d=>({...d,fields:{...d.fields,[key]:value}}))}
+ function setSEO(key:keyof CmsDocument['seo'],value:string){setDraft(d=>({...d,seo:{...d.seo,[key]:value}}))}
+ async function save(){setBusy(true);setError('');setMessage('');try{
+  const result=await readJSON(await fetch('/api/cms/admin/'+slug+'/draft',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({document:draft,expected_revision:page.draft_revision})}));
+  setPage(p=>({...p,draft, draft_revision:result.draft_revision}));setMessage('Draft saved. Live website is unchanged.');
+ }catch(e){setError(e instanceof Error?e.message:'Save failed')}finally{setBusy(false)}}
+ async function publish(){setBusy(true);setError('');setMessage('');try{
+  // Always persist current form before publishing, avoiding lost edits.
+  const saved=await readJSON(await fetch('/api/cms/admin/'+slug+'/draft',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({document:draft,expected_revision:page.draft_revision})}));
+  setPage(p=>({...p,draft, draft_revision:saved.draft_revision}));
+  await readJSON(await fetch('/api/cms/admin/'+slug+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}));
+  await loadPage(slug);setMessage('Published successfully. Refresh the public page to view changes.');
+ }catch(e){setError(e instanceof Error?e.message:'Publish failed')}finally{setBusy(false)}}
+ async function rollback(version:number){
+  if(!window.confirm('Restore published version '+version+' for '+slug+'? This will publish a new revision.'))return;
+  setBusy(true);setError('');try{await readJSON(await fetch('/api/cms/admin/'+slug+'/rollback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version})}));await loadPage(slug);setMessage('Published version '+version+' restored.') }catch(e){setError(e instanceof Error?e.message:'Rollback failed')}finally{setBusy(false)}}
+ if(!loaded)return <main className="cms-studio"><div className="cms-login"><p>Checking administrator access…</p></div></main>;
+ if(!staff)return <main className="cms-studio"><div className="cms-login"><p className="cms-muted">AUTOMAN STAR / CONTENT STUDIO</p><h1>Administrator sign in</h1><p className="cms-muted">Secure access to website content, publishing and SEO.</p><form onSubmit={login}><label>Staff email<input type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/></label><button className="cms-button" disabled={busy}>Sign in</button></form>{error&&<p className="cms-error" role="alert">{error}</p>}<p><Link href="/">← Back to website</Link></p></div></main>;
+ if(staff.role!=='admin')return <main className="cms-studio"><div className="cms-login"><h1>Access restricted</h1><p>This account cannot edit website content. An administrator role is required.</p><button className="cms-button secondary" onClick={logout}>Sign out</button></div></main>;
+ return <main className="cms-studio"><header className="cms-top"><strong className="cms-brand">AUTOMAN STAR / CONTENT STUDIO</strong><div className="cms-actions"><span className="cms-muted">{staff.name} · Admin</span><Link href="/">Visit website</Link><button className="cms-button secondary" onClick={logout}>Sign out</button></div></header>
+ <div className="cms-workspace"><aside className="cms-sidebar"><p>CONTENT MANAGEMENT</p>{CMS_PAGES.map(p=><button key={p.slug} aria-current={slug===p.slug?'page':undefined} onClick={()=>setSlug(p.slug)}>{p.name}</button>)}<Link style={{display:'block',padding:15,color:'#dbeddf',fontSize:13}} href="/dashboard/properties">Property manager ↗</Link></aside>
+ <section className="cms-main"><p className="cms-muted">PAGE EDITOR / {selected.path}</p><h1>{selected.name}</h1><p className="cms-muted">Edit content and SEO without changing the existing design. Drafts are private until published.</p>
+ {error&&<div className="cms-error" role="alert">{error}</div>}{message&&<div className="cms-alert" role="status">{message}</div>}
+ <div className="cms-actions" style={{margin:'22px 0'}}>
+ <button className="cms-button secondary" disabled={busy} onClick={save}>Save draft</button>
+ <button className="cms-button" disabled={busy} onClick={publish}>Publish changes</button>
+ {selected.slug!=='site'&&<Link href={selected.path} target="_blank" rel="noopener noreferrer">View public page ↗</Link>}
+ <span className="cms-muted">Draft #{page.draft_revision} · Live #{page.published_revision}</span>
+ </div>
+ <div className="cms-panel"><h2>Page content</h2>
+ {selected.fields.length?selected.fields.map(field=><label key={field.key}>{field.label}
+ {field.type==='textarea'?<textarea value={draft.fields[field.key]??''} onChange={e=>setField(field.key,e.target.value)} placeholder="Leave blank to use current website copy"/>:<input type="text" value={draft.fields[field.key]??''} onChange={e=>setField(field.key,e.target.value)} placeholder={field.type==='image'?'HTTPS image URL or /path':'Leave blank to use current website copy'}/>}
+ </label>):<p className="cms-muted">This page currently supports SEO editing. Content fields are being mapped to the preserved website template.</p>}
+ </div>
+ <div className="cms-panel"><h2>SEO &amp; metadata</h2>
+ <label>SEO title<input maxLength={140} value={draft.seo.title??''} onChange={e=>setSEO('title',e.target.value)}/></label>
+ <label>Meta description<textarea maxLength={500} value={draft.seo.description??''} onChange={e=>setSEO('description',e.target.value)}/></label>
+ <label>Open Graph image URL<input value={draft.seo.og_image??''} onChange={e=>setSEO('og_image',e.target.value)} placeholder="https://... or /og-image.jpg"/></label>
+ <label>Canonical path<input value={draft.seo.canonical??''} onChange={e=>setSEO('canonical',e.target.value)} placeholder="/about"/></label>
+ <label>Search index policy<select value={draft.seo.robots||'index'} onChange={e=>setSEO('robots',e.target.value)}><option value="index">Index allowed</option><option value="noindex">No index</option></select></label>
+ </div>
+ <div className="cms-panel"><h2>Published version history</h2><p className="cms-muted">Rollback republishes a historical snapshot with a new version number.</p><ul className="cms-versions">{versions.map(v=><li key={v.version}><span>Version {v.version} · {new Date(v.created_at).toLocaleString()}</span><button className="cms-button secondary" disabled={busy} onClick={()=>rollback(v.version)}>Restore</button></li>)}</ul>{!versions.length&&<p className="cms-muted">No versions published yet.</p>}</div>
+ </section></div></main>
+}
