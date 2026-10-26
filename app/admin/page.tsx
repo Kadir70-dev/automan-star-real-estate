@@ -8,10 +8,12 @@ import './admin.css';
 type Staff={id:string;name:string;role:string};
 type PageResponse={slug:string;draft:CmsDocument;published:CmsDocument;draft_revision:number;published_revision:number};
 type Version={version:number;created_at:string};
+type Media={id:string;url:string;filename:string;alt_text:string;bytes:number};
 function emptyPage(slug:string):PageResponse{return {slug,draft:{fields:{},seo:{title:'',description:'',og_image:'',canonical:'',robots:''}},published:{fields:{},seo:{title:'',description:'',og_image:'',canonical:'',robots:''}},draft_revision:0,published_revision:0}}
 async function readJSON(r:Response){const j=await r.json();if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
 export default function AdminStudio(){
  const[staff,setStaff]=useState<Staff|null>(null),[loaded,setLoaded]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[slug,setSlug]=useState('home'),[page,setPage]=useState<PageResponse>(emptyPage('home')),[draft,setDraft]=useState<CmsDocument>(emptyPage('home').draft),[versions,setVersions]=useState<Version[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
+ const[media,setMedia]=useState<Media[]>([]);
  const selected=useMemo(()=>CMS_PAGES.find(p=>p.slug===slug)!,[slug]);
  const loadPage=useCallback(async(p:string)=>{
   const result=await readJSON(await fetch('/api/cms/admin/'+p,{cache:'no-store'})) as PageResponse;
@@ -20,7 +22,10 @@ export default function AdminStudio(){
   if(versionsRes.ok)setVersions(((await versionsRes.json()) as {data:Version[]}).data);
  },[]);
  useEffect(()=>{let active=true;(async()=>{try{const r=await fetch('/api/staff/me',{cache:'no-store'});if(r.ok&&active){const s=(await r.json()).staff as Staff;setStaff(s)}}catch{}finally{if(active)setLoaded(true)}})();return()=>{active=false}},[]);
+ useEffect(()=>{if(staff?.role==='admin')void loadMedia()},[staff?.role]);
  useEffect(()=>{if(staff?.role!=='admin')return;setMessage('');setError('');void loadPage(slug).catch(e=>setError(e.message))},[slug,staff?.role,loadPage]);
+ async function loadMedia(){const response=await fetch('/api/cms/admin/media',{cache:'no-store'});if(response.ok)setMedia((await response.json()).data||[])}
+ async function uploadMedia(file:File){setBusy(true);setError('');try{const form=new FormData();form.append('file',file);const response=await fetch('/api/cms/admin/media',{method:'POST',body:form});const data=await readJSON(response);await loadMedia();setMessage('Image uploaded: '+data.url+'. Select a page image field to use it.')}catch(e){setError(e instanceof Error?e.message:'Upload failed')}finally{setBusy(false)}}
  async function login(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{
   await readJSON(await fetch('/api/staff/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})}));
   setPassword('');const me=await readJSON(await fetch('/api/staff/me',{cache:'no-store'}));
@@ -60,6 +65,10 @@ export default function AdminStudio(){
  {selected.fields.length?selected.fields.map(field=><label key={field.key}>{field.label}
  {field.type==='textarea'?<textarea value={draft.fields[field.key]??''} onChange={e=>setField(field.key,e.target.value)} placeholder="Leave blank to use current website copy"/>:<input type="text" value={draft.fields[field.key]??''} onChange={e=>setField(field.key,e.target.value)} placeholder={field.type==='image'?'HTTPS image URL or /path':'Leave blank to use current website copy'}/>}
  </label>):<p className="cms-muted">This page currently supports SEO editing. Content fields are being mapped to the preserved website template.</p>}
+ </div>
+ <div className="cms-panel"><h2>Media Library</h2><p className="cms-muted">Upload an image (JPEG, PNG or WebP, maximum 10MB). Copy a media URL into any image field above.</p>
+ <label>Upload new image<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e=>{const file=e.target.files?.[0];if(file)void uploadMedia(file);e.target.value=''}}/></label>
+ <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12}}>{media.map(m=><div key={m.id} style={{border:'1px solid #e5e6e1',padding:10,borderRadius:8}}><img src={m.url} alt={m.alt_text||m.filename} style={{width:'100%',height:105,objectFit:'cover',borderRadius:5}}/><p className="cms-muted" style={{overflowWrap:'anywhere'}}>{m.filename}</p><button className="cms-button secondary" type="button" onClick={()=>navigator.clipboard.writeText(m.url)}>Copy image URL</button></div>)}</div>
  </div>
  <div className="cms-panel"><h2>SEO &amp; metadata</h2>
  <label>SEO title<input maxLength={140} value={draft.seo.title??''} onChange={e=>setSEO('title',e.target.value)}/></label>
