@@ -8,14 +8,13 @@ From authorized SSH on the designated VPS `srv2093533`:
 cd /opt/automan-star-real-estate
 git fetch origin main
 git status --short
-# Take backup of currently running services *before* pulling the new source.
-# On existing release, the backup script may not exist yet, so obtain that script separately,
-# or take a manual pg_dump and media volume snapshot before updating.
+# Pulling source only does not change the running containers or database.
+git pull --ff-only
+# Back up the still-running old PostgreSQL and media BEFORE any compose up/build.
+bash deploy/hostinger/backup-before-cms.sh
 ```
 
-For an existing checkout with this script, run:
-```bash
-bash deploy/hostinger/backup-before-cms.sh
+The script creates a local copy of the existing database and image volume.
 ```
 This is a **local** backup only. Make a verified **encrypted off-site** copy. Do not run `docker compose down -v`.
 
