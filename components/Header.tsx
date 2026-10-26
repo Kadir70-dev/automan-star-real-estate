@@ -6,7 +6,7 @@ import {usePathname} from 'next/navigation';
 import {useEffect,useState} from 'react';
 import {Menu,X} from 'lucide-react';
 const nav:[string,string][]=[['/properties','Properties'],['/buy','Buy'],['/off-plan','Off-plan'],['/commercial','Commercial'],['/experience','3D residence'],['/about','About']];
-export default function Header({site}:{site:CmsDocument}){
+export default function Header({site}:{site?:CmsDocument}={}){
  const [open,setOpen]=useState(false);
  const [scrolled,setScrolled]=useState(false);
  const pathname=usePathname();
@@ -16,7 +16,7 @@ export default function Header({site}:{site:CmsDocument}){
  const isActive=(href:string)=>pathname===href||pathname.startsWith(href+'/');
  return <header className={'site-header ds-header'+(scrolled?' header-scrolled':'')+(open?' header-open':'')}>
   <div className="nav-inner container">
-   <Link className="brand" href="/" onClick={()=>setOpen(false)} aria-label="AMS Realty, Automan Star Real Estate home"><Image className="brand-logo" data-cms-image="header.logo" src={site.fields['header.logo']||'/saudlogo-nav-mark.png'} alt="AMS Realty" width={223} height={129} priority unoptimized/></Link>
+   <Link className="brand" href="/" onClick={()=>setOpen(false)} aria-label="AMS Realty, Automan Star Real Estate home"><Image className="brand-logo" data-cms-image="header.logo" src={site?.fields['header.logo']||'/saudlogo-nav-mark.png'} alt="AMS Realty" width={223} height={129} priority unoptimized/></Link>
    <nav id="main-navigation" className={'navigation'+(open?' open':'')} aria-label="Primary navigation">
     {nav.map(([href,name])=><Link key={href} href={href} onClick={()=>setOpen(false)} className={isActive(href)?'active':''} aria-current={isActive(href)?'page':undefined}>{name}</Link>)}
     <Link href="/contact" className="nav-mobile-contact" onClick={()=>setOpen(false)}>Contact</Link>
