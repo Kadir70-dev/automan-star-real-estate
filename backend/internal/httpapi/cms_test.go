@@ -19,6 +19,7 @@ func TestCMSDocumentValidation(t *testing.T) {
 		{Fields: map[string]string{"social.instagram": "javascript:alert(1)"}},
 		{Fields: map[string]string{"footer.email": "not an email"}},
 		{Fields: map[string]string{"hero.image": "https://"}},
+		{SEO: cmsSEO{Canonical: "https://malicious.example/"}} ,
 	} {
 		if validCmsDocument(input) {
 			t.Fatalf("unsafe CMS document accepted: %+v", input)

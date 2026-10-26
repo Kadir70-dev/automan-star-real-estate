@@ -19,6 +19,11 @@ test('CMS permits page editing with published document fallback',()=>{
  assert.match(source('app/page.tsx'),/data-cms-field="tour.title"/);
  assert.match(source('app/privacy/page.tsx'),/getCms\('privacy'\)/);
 });
+test('properties listing intro uses a single CMS document fetch',()=>{
+ const page=source('app/properties/page.tsx');
+ assert.match(page,/getLiveProperties\(\),searchParams,getCms\('properties'\)/);
+ assert.doesNotMatch(page,/cmsText\(await getCms/);
+});
 test('media accessibility edits stay authenticated and do not use Netlify storage',()=>{
  assert.match(source('backend/internal/httpapi/api.go'),/requireRole\("admin"\)\(a\.cmsUpdateMedia\)/);
  assert.match(source('backend/internal/httpapi/cms_media.go'),/UPDATE cms_media SET alt_text/);

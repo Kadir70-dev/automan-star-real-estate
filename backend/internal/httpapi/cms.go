@@ -57,7 +57,7 @@ func validCmsDocument(d cmsDocument) bool {
 	if len(d.Fields) > 120 || len(d.SEO.Title) > 140 || len(d.SEO.Description) > 500 || len(d.SEO.OGImage) > 2048 || len(d.SEO.Canonical) > 512 || len(d.SEO.Robots) > 16 {
 		return false
 	}
-	if !validCmsURL(d.SEO.OGImage) || !validCmsURL(d.SEO.Canonical) || (d.SEO.Robots != "" && d.SEO.Robots != "index" && d.SEO.Robots != "noindex") {
+	if !validCmsURL(d.SEO.OGImage) || !validCmsURL(d.SEO.Canonical) || (d.SEO.Canonical != "" && !strings.HasPrefix(d.SEO.Canonical, "/") && !strings.HasPrefix(d.SEO.Canonical, "https://automanstarrealty.com/")) || (d.SEO.Robots != "" && d.SEO.Robots != "index" && d.SEO.Robots != "noindex") {
 		return false
 	}
 	for k, v := range d.Fields {
