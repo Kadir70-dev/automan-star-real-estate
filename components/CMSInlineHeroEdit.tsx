@@ -1,9 +1,9 @@
 'use client';
 import {useEffect,useState} from 'react';
-type EditorState={heading:string;description:string;primary_button:{label:string;href:string};seo:{title:string;description:string}};
-const defaults:EditorState={heading:'Buy well in Dubai.',description:'Apartments, villas, off-plan and commercial property, advised from our office in Business Bay.',primary_button:{label:'Browse properties',href:'/properties'},seo:{title:'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay',description:'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.'}};
+type EditorState={heading:string;description:string;primary_button:{label:string;href:string};hero_images:string[];seo:{title:string;description:string}};
+const defaults:EditorState={heading:'Buy well in Dubai.',description:'Apartments, villas, off-plan and commercial property, advised from our office in Business Bay.',primary_button:{label:'Browse properties',href:'/properties'},hero_images:[],seo:{title:'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay',description:'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.'}};
 export default function CMSInlineHeroEdit(){
- const [isAdmin,setAdmin]=useState(false),[open,setOpen]=useState(false),[value,setValue]=useState<EditorState>(defaults),[rev,setRev]=useState(0),[notice,setNotice]=useState(''),[saving,setSaving]=useState(false);
+ const [library,setLibrary]=useState<{id:string;filename:string}[]>([]);const [isAdmin,setAdmin]=useState(false),[open,setOpen]=useState(false),[value,setValue]=useState<EditorState>(defaults),[rev,setRev]=useState(0),[notice,setNotice]=useState(''),[saving,setSaving]=useState(false);
  useEffect(()=>{
   let active=true;
   void fetch('/api/staff/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(x=>{if(active)setAdmin(x?.staff?.role==='admin')}).catch(()=>{});
@@ -14,11 +14,25 @@ export default function CMSInlineHeroEdit(){
   setNotice('');
   try{
    const response=await fetch('/api/cms/admin/pages/home',{cache:'no-store'});
-   if(response.ok){const data=await response.json();setRev(data.draft_revision);setValue({...defaults,...data.draft,primary_button:{...defaults.primary_button,...data.draft?.primary_button},seo:{...defaults.seo,...data.draft?.seo}})}
+   if(response.ok){const data=await response.json();setRev(data.draft_revision);setValue({...defaults,...data.draft,primary_button:{...defaults.primary_button,...data.draft?.primary_button},hero_images:Array.isArray(data.draft?.hero_images)?data.draft.hero_images:[],seo:{...defaults.seo,...data.draft?.seo}})}
    else if(response.status===404){setRev(0);setValue(defaults)}
    else throw Error('Unable to load CMS draft');
+   const media=await fetch('/api/cms/admin/media',{cache:'no-store'});if(media.ok){const data=await media.json();setLibrary(data.data||[])}
    setOpen(true);
   }catch(e){setNotice(e instanceof Error?e.message:'CMS unavailable')}
+ }
+ async function uploadImage(file:File|undefined){
+  if(!file)return;
+  if(file.size>10*1024*1024){setNotice('Image must be under 10MB');return}
+  setSaving(true);setNotice('');
+  try {
+   const form=new FormData();form.append('file',file);
+   const res=await fetch('/api/cms/admin/media',{method:'POST',body:form});
+   const data=await res.json();if(!res.ok)throw Error(data.error||'Upload failed');
+   setLibrary(items=>[{id:data.id,filename:data.filename},...items]);
+   setValue(v=>({...v,hero_images:[...v.hero_images,data.id].slice(0,8)}));
+   setNotice('Image uploaded. Save and publish to make the change live.');
+  }catch(e){setNotice(e instanceof Error?e.message:'Upload failed')}finally{setSaving(false)}
  }
  async function save(publish:boolean){
   setSaving(true);setNotice('');
@@ -47,6 +61,21 @@ export default function CMSInlineHeroEdit(){
      <label>Description<textarea style={input} rows={4} maxLength={600} value={value.description} onChange={e=>setValue({...value,description:e.target.value})}/></label>
      <label>Button label<input style={input} maxLength={60} value={value.primary_button.label} onChange={e=>setValue({...value,primary_button:{...value.primary_button,label:e.target.value}})}/></label>
      <label>Button path<input style={input} maxLength={120} value={value.primary_button.href} onChange={e=>setValue({...value,primary_button:{...value.primary_button,href:e.target.value}})}/></label>
+     <h3>Hero banner images</h3>
+     <p>Upload JPG, PNG or WebP (max 10MB). Up to eight banners. Leave the list empty to keep existing website images.</p>
+     <input type='file' aria-label='Upload hero banner' accept='image/jpeg,image/png,image/webp' disabled={saving} onChange={e=>{void uploadImage(e.target.files?.[0]);e.target.value=''}}/>
+     <div style={{display:'grid',gap:10}}>
+      {value.hero_images.map((id,i)=><div key={id} style={{display:'flex',alignItems:'center',gap:12,background:'white',padding:8,borderRadius:8}}>
+       <img src={'/api/cms/public/media/'+id} width={100} height={58} style={{objectFit:'cover',borderRadius:4}} alt='Selected banner preview'/>
+       <span style={{flex:1,fontSize:12}}>{library.find(m=>m.id===id)?.filename||id}</span>
+       <button type='button' style={button} onClick={()=>setValue({...value,hero_images:value.hero_images.filter((_,k)=>k!==i)})}>Remove</button>
+      </div>)}
+     </div>
+     {library.length>0&&<label>Add image from library
+      <select style={input} defaultValue='' onChange={e=>{if(e.target.value&&!value.hero_images.includes(e.target.value))setValue({...value,hero_images:[...value.hero_images,e.target.value].slice(0,8)});e.target.value=''}}>
+       <option value=''>Choose existing image…</option>{library.map(m=><option value={m.id} key={m.id}>{m.filename}</option>)}
+      </select>
+     </label>}
      <h3>Search Engine Metadata</h3>
      <label>SEO title<input style={input} maxLength={120} value={value.seo.title} onChange={e=>setValue({...value,seo:{...value.seo,title:e.target.value}})}/></label>
      <label>Meta description<textarea style={input} rows={3} maxLength={300} value={value.seo.description} onChange={e=>setValue({...value,seo:{...value.seo,description:e.target.value}})}/></label>
