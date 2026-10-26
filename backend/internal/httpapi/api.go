@@ -91,6 +91,9 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("GET /api/v1/properties/{slug}", a.publicPropertyDetail)
 	// CMS public reads are limited to published, validated page documents.
 	mux.HandleFunc("GET /api/v1/cms/public/{slug}", a.cmsPublicPage)
+	mux.HandleFunc("GET /api/v1/cms/public/media/{id}", a.cmsServeMedia)
+	mux.HandleFunc("GET /api/v1/cms/admin/media", a.requireRole("admin")(a.cmsListMedia))
+	mux.HandleFunc("POST /api/v1/cms/admin/media", a.requireRole("admin")(a.cmsUploadMedia))
 	// A browser must be authenticated as an administrator for every CMS mutation.
 	mux.HandleFunc("GET /api/v1/cms/admin/pages/{slug}", a.requireRole("admin")(a.cmsAdminPage))
 	mux.HandleFunc("PUT /api/v1/cms/admin/pages/{slug}/draft", a.requireRole("admin")(a.cmsSaveDraft))
