@@ -33,10 +33,9 @@ var cmsPages = map[string]bool{"home":true,"about":true,"contact":true,"buy":tru
 func cmsPage(slug string) bool { return cmsPages[slug] }
 func validCmsURL(value string) bool {
  if value=="" {return true}
- if strings.HasPrefix(value,"/") && !strings.HasPrefix(value,"//") && !strings.ContainsAny(value,"
-\") {return true}
- return strings.HasPrefix(value,"https://") && !strings.ContainsAny(value,"
-")
+ if strings.ContainsRune(value,10) || strings.ContainsRune(value,13) || strings.ContainsRune(value,92) {return false}
+ if strings.HasPrefix(value,"/") && !strings.HasPrefix(value,"//") {return true}
+ return strings.HasPrefix(value,"https://")
 }
 func validCmsDocument(d cmsDocument) bool {
  if len(d.Fields)>120 || len(d.SEO.Title)>140 || len(d.SEO.Description)>500 || len(d.SEO.OGImage)>2048 || len(d.SEO.Canonical)>512 || len(d.SEO.Robots)>16 {return false}
