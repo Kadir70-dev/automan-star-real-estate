@@ -8,9 +8,11 @@ COPY . .
 # Resolve and verify the pinned module graph inside this isolated builder.
 RUN go mod tidy && go mod verify
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /api ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /bootstrap ./cmd/bootstrap
 FROM alpine:3.21
 RUN addgroup -S app && adduser -S -G app app && mkdir -p /app/media && chown app:app /app/media
 COPY --from=build /api /api
+COPY --from=build /bootstrap /bootstrap
 USER app
 EXPOSE 8080
 ENTRYPOINT ["/api"]

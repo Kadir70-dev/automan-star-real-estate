@@ -1,3 +1,5 @@
+import {getCms} from '@/lib/cms';
+import SiteChrome from '@/components/SiteChrome';
 import MobileContactBar from '@/components/MobileContactBar';
 import type { Metadata, Viewport } from 'next';
 import { Bodoni_Moda, Manrope } from 'next/font/google';
@@ -20,4 +22,4 @@ export const metadata:Metadata={
  ...(process.env.GOOGLE_SITE_VERIFICATION?{verification:{google:process.env.GOOGLE_SITE_VERIFICATION}}:{}),
 };
 export const viewport:Viewport={themeColor:'#0f1b20',viewportFit:'cover'};
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en-AE" className={`${serif.variable} ${sans.variable}`}><body><script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd())}/><a className="skip-link" href="#main">Skip to content</a><Header/><div id="main" tabIndex={-1}>{children}</div><Footer/><MobileContactBar/><ConsultationPopup/></body></html>}
+export default async function RootLayout({children}:{children:React.ReactNode}){const site=await getCms('site');return <html lang="en-AE" className={`${serif.variable} ${sans.variable}`}><body><script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd())}/><SiteChrome site={site}>{children}</SiteChrome></body></html>}
