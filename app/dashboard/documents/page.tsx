@@ -1,1 +1,2 @@
-import PhaseOneAdmin from '@/components/PhaseOneAdmin';export default function Page(){return <PhaseOneAdmin kind='documents'/>}
+import StaffDashboard from '@/components/StaffDashboard';
+export default function Page(){return <StaffDashboard mode="documents"/>}

@@ -1,5 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
+import type {CmsDocument} from '@/lib/cms';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const ThreeArchitecture = dynamic(() => import('./ThreeArchitecture'), { ssr: false });
@@ -24,7 +25,11 @@ function pickMode(): Mode {
   return 'webgl';
 }
 
-export default function ArchitecturalStory() {
+export default function ArchitecturalStory({cms}:{cms?:CmsDocument}={}) {
+  const content=chapters.map((chapter,i)=>({
+   title:cms?.fields[`story.${i}.title`]??chapter.title,
+   copy:cms?.fields[`story.${i}.copy`]??chapter.copy
+  }));
   const section = useRef<HTMLElement>(null);
   const progress = useRef(0);
   const copy = useRef<(HTMLLIElement | null)[]>([]);
@@ -114,17 +119,17 @@ export default function ArchitecturalStory() {
       </div>}
       <div className="story-shade" aria-hidden="true" />
       <div className="container story-overlay">
-        <h2 id="story-title" className="story-heading">How we assess a property</h2>
+        <h2 id="story-title" className="story-heading" data-cms-field="story.heading">{cms?.fields['story.heading']??'How we assess a property'}</h2>
         <ol className="story-copy">
-          {chapters.map((c, i) => <li key={c.title} ref={(n) => { copy.current[i] = n; }}>
+          {content.map((c, i) => <li key={i} ref={(n) => { copy.current[i] = n; }}>
             <div className="story-still-inline" aria-hidden="true" style={{ backgroundImage: `url(${STILLS[i]})` }} />
-            <h3>{c.title}</h3>
-            <p>{c.copy}</p>
+            <h3 data-cms-field={`story.${i}.title`}>{c.title}</h3>
+            <p data-cms-field={`story.${i}.copy`}>{c.copy}</p>
           </li>)}
         </ol>
         <div className="story-rail" aria-hidden="true">{chapters.map((c, i) => <span key={c.title} ref={(n) => { ticks.current[i] = n; }} className={i === 0 ? 'is-active' : ''}>{i + 1}</span>)}</div>
       </div>
-      <p className="story-note">Concept model for illustration. Not a real or listed building.</p>
+      <p className="story-note" data-cms-field="story.note">{cms?.fields['story.note']??'Concept model for illustration. Not a real or listed building.'}</p>
     </div>
   </section>;
 }

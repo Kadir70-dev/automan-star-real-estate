@@ -7,8 +7,8 @@ const defaultSlides=[
  {alt:'Dubai Marina towers along the water',image:'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=2400&q=80'},
  {alt:'Contemporary villa with a private pool',image:'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=2400&q=80'},
 ];
-export default function HeroBannerSlider({primaryImage}:{primaryImage?:string}){
- const slides=primaryImage?[{...defaultSlides[0],image:primaryImage},...defaultSlides.slice(1)]:defaultSlides;
+export default function HeroBannerSlider({primaryImage,secondImage,thirdImage,primaryAlt,secondAlt,thirdAlt}:{primaryImage?:string;secondImage?:string;thirdImage?:string;primaryAlt?:string;secondAlt?:string;thirdAlt?:string}){
+ const slides=defaultSlides.map((slide,i)=>({...slide,image:[primaryImage,secondImage,thirdImage][i]||slide.image,alt:[primaryAlt,secondAlt,thirdAlt][i]||slide.alt}));
  const [index,setIndex]=useState(0);
  const [paused,setPaused]=useState(false);
  const [reduced,setReduced]=useState(true);
@@ -16,7 +16,7 @@ export default function HeroBannerSlider({primaryImage}:{primaryImage?:string}){
  useEffect(()=>{if(paused||reduced)return;const t=window.setInterval(()=>setIndex(i=>(i+1)%slides.length),7000);return()=>window.clearInterval(t)},[paused,reduced]);
  return <div className="hero-media">
   {slides.map((slide,i)=><div key={slide.image} className={'hero-media-frame'+(i===index?' is-active':'')} aria-hidden={i!==index}>
-   <Image data-cms-image={i===0?'hero.image':undefined} unoptimized src={slide.image} alt={slide.alt} fill priority={i===0} loading={i===0?undefined:'lazy'} sizes="100vw"/>
+   <Image data-cms-image={['hero.image','hero.image2','hero.image3'][i]} unoptimized src={slide.image} alt={slide.alt} fill priority={i===0} loading={i===0?undefined:'lazy'} sizes="100vw"/>
   </div>)}
   <div className="hero-media-controls">
    <div className="hero-media-dots" role="group" aria-label="Choose image">{slides.map((s,i)=><button key={s.image} type="button" aria-label={`Show image ${i+1}: ${s.alt}`} aria-pressed={i===index} onClick={()=>setIndex(i)}><span className={i===index&&!paused&&!reduced?'is-running':''}/></button>)}</div>

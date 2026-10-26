@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -115,4 +116,52 @@ func (a API) cmsServeMedia(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "inline")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	_, _ = io.Copy(w, file)
+}
+
+// Update an existing image's accessibility metadata without replacing the file.
+// This endpoint is admin-only and records an audit event transactionally.
+func (a API) cmsUpdateMedia(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if !safeId(id) || a.DB == nil {
+		respond(w, 400, map[string]string{"error": "invalid media ID"})
+		return
+	}
+	var input struct {
+		AltText string `json:"alt_text"`
+	}
+	if !cmsDecode(w, r, &input) {
+		return
+	}
+	input.AltText = strings.TrimSpace(input.AltText)
+	if len(input.AltText) > 300 || strings.ContainsRune(input.AltText, 0) {
+		respond(w, 422, map[string]string{"error": "alt text must be at most 300 characters"})
+		return
+	}
+	s, _ := a.session(r)
+	ctx, cancel := context.WithTimeout(r.Context(), 6*time.Second)
+	defer cancel()
+	tx, err := a.DB.Begin(ctx)
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "database unavailable"})
+		return
+	}
+	defer tx.Rollback(ctx)
+	tag, err := tx.Exec(ctx, "UPDATE cms_media SET alt_text=$1 WHERE id=$2", input.AltText, id)
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "media update failed"})
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		respond(w, 404, map[string]string{"error": "media not found"})
+		return
+	}
+	if _, err = tx.Exec(ctx, "INSERT INTO audit_events(actor_id,action,subject_type) VALUES($1,$2,'cms_media')", s.ID, "cms.media.alt"); err != nil {
+		respond(w, 503, map[string]string{"error": "audit unavailable"})
+		return
+	}
+	if err = tx.Commit(ctx); err != nil {
+		respond(w, 503, map[string]string{"error": "media update failed"})
+		return
+	}
+	respond(w, 200, map[string]any{"updated": true, "alt_text": input.AltText})
 }

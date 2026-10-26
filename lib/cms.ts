@@ -31,7 +31,7 @@ export function cmsMetadata(doc:CmsDocument,defaults:Metadata):Metadata{
   ...defaults,
   ...(title?{title}:{ }),
   ...(description?{description}:{ }),
-  ...(canonical&&canonical.startsWith('/')&&!canonical.startsWith('//')?{alternates:{...defaults.alternates,canonical}}:{}),
+  ...(canonical&&((canonical.startsWith('/')&&!canonical.startsWith('//'))||canonical.startsWith('https://automanstarrealty.com/'))?{alternates:{...defaults.alternates,canonical}}:{}),
   ...(seo.robots==='noindex'?{robots:{index:false,follow:false}}:{}),
   openGraph:{...defaults.openGraph,...(title?{title}:{}),...(description?{description}:{}),...(og?{images:[og]}:{})},
   twitter:{...defaults.twitter,...(title?{title}:{}),...(description?{description}:{}),...(og?{images:[og]}:{})},

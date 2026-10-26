@@ -11,6 +11,9 @@ check /api/v1/admin/visits 401
 check /api/v1/admin/properties 401
 check /api/v1/admin/properties/not-a-uuid/media 401
 check /api/v1/admin/documents/not-a-uuid/download 401
+check /api/v1/cms/public/home 200
+check /api/v1/cms/admin/pages/home 401
+check /api/v1/cms/admin/media 401
 check /api/v1/status 200
 check /api/v1/properties 200
 printf 'PASS: basic health + unauthorized-access checks. Full DB CRUD requires an authenticated integration test.\n'

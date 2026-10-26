@@ -12,7 +12,9 @@
 - Shared image library uploads persist to the **existing** Hostinger named media volume, not Netlify's ephemeral filesystem.
 - CRM leads/properties and existing site styling preserved.
 
-**Not yet implemented:** full copy inventory of every subsection, visual editing of rich/3D components, media cropping/optimization, media alt-text editing, independent admin subdomain, CDN/R2 object storage, scheduled backups, WhatsApp enquiry notifications. These must not be described as complete.
+**October 26 follow-up branch:** The page-field inventory now covers homepage slides, service cards, community images, leadership, unchanged 3D story chapter copy, tour CTA/copy, properties intro, privacy paragraphs, site navigation, business contact/socials and extended about copy. A media picker, alt-text PATCH API/editor and optional browser-side center crop to WebP (16:9 or 1:1) are added. The demo overview is being replaced by authenticated real-data metrics. Check the completion PR and CI before promotion.
+
+**Still not implemented:** graphical editing of rich/3D components, server-side image cropping/optimization (browser-side crop is available), independent admin subdomain, CDN/R2 object storage, scheduled offsite backups, WhatsApp enquiry notifications. These must not be described as complete.
 
 ## Before production
 

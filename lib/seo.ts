@@ -31,25 +31,36 @@ export function pageMetadata({path,title,description,socialTitle}:{path:string;t
 export const NOINDEX:Metadata['robots']={index:false,follow:true};
 
 const agencyId=`${SITE_URL}/#agency`;
-export function siteJsonLd(){
+export function siteJsonLd(overrides:Record<string,string>={}){
+ const name=overrides['business.name']||BUSINESS.name;
+ const email=overrides['footer.email']||BUSINESS.email;
+ const street=overrides['business.address']||BUSINESS.street;
+ const locality=overrides['business.locality']||BUSINESS.locality;
+ const region=overrides['business.region']||BUSINESS.region;
+ const social=[overrides['social.linkedin']||BUSINESS.sameAs[0],overrides['social.instagram']||BUSINESS.sameAs[1]];
+ const staff=LEADERSHIP.map((l,i)=>({
+  '@type':'Person',name:overrides[`leadership.${i}.name`]||l.name,jobTitle:overrides[`leadership.${i}.role`]||l.role
+ }));
+ const logo=overrides['header.logo']||'/saudlogo-optimized.png';
  return {
   '@context':'https://schema.org',
   '@graph':[
    {
     '@type':['RealEstateAgent','Organization'],
     '@id':agencyId,
-    name:BUSINESS.name,
+    name,
     url:`${SITE_URL}/`,
-    logo:`${SITE_URL}/saudlogo-optimized.png`,
+    logo:new URL(logo,SITE_URL).toString(),
     image:`${SITE_URL}${OG_IMAGE.url}`,
-    email:BUSINESS.email,
-    address:{'@type':'PostalAddress',streetAddress:BUSINESS.street,addressLocality:BUSINESS.locality,addressRegion:BUSINESS.region,addressCountry:BUSINESS.country},
+    email,
+    ...(overrides['business.phone']?{telephone:overrides['business.phone']}:{}),
+    address:{'@type':'PostalAddress',streetAddress:street,addressLocality:locality,addressRegion:region,addressCountry:BUSINESS.country},
     areaServed:{'@type':'City',name:'Dubai'},
-    founder:{'@type':'Person',name:LEADERSHIP[0].name,jobTitle:LEADERSHIP[0].role},
-    employee:LEADERSHIP.map(l=>({'@type':'Person',name:l.name,jobTitle:l.role})),
-    sameAs:BUSINESS.sameAs,
+    founder:staff[0],
+    employee:staff,
+    sameAs:social,
    },
-   {'@type':'WebSite','@id':`${SITE_URL}/#website`,url:`${SITE_URL}/`,name:BUSINESS.name,inLanguage:'en-AE',publisher:{'@id':agencyId}},
+   {'@type':'WebSite','@id':`${SITE_URL}/#website`,url:`${SITE_URL}/`,name,inLanguage:'en-AE',publisher:{'@id':agencyId}},
   ],
  };
 }
