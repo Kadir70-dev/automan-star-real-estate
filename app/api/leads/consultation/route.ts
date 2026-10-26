@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {validateLead,type CleanLead} from '@/lib/consultation-lead';
+import {relayHeaders} from '@/lib/backend-relay';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
@@ -47,10 +48,10 @@ async function toNetlifyForms(lead:Lead,siteOrigin:string){
  throw new Error('netlify-forms status '+r.status);
 }
 
-async function toCrm(lead:Lead){
+async function toCrm(lead:Lead,relay:Record<string,string>){
  const base=process.env.BACKEND_INTERNAL_URL;
  if(!base)return null;
- const r=await fetch(`${base}/api/v1/leads`,{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000),
+ const r=await fetch(`${base}/api/v1/leads`,{method:'POST',headers:{'Content-Type':'application/json',...relay},cache:'no-store',signal:AbortSignal.timeout(8000),
   body:JSON.stringify({name:lead.name,email:lead.email,phone:lead.phoneE164,property:'Consultation popup',message:`Interested in: ${lead.interest}\nSource page: ${lead.sourceUrl}\nSubmitted: ${lead.submittedAt}`.slice(0,3000)})});
  if(r.ok)return true;
  throw new Error('crm status '+r.status);
@@ -86,7 +87,7 @@ export async function POST(req:NextRequest){
  const siteOrigin=new URL(req.url).origin;
  const lead:Lead={...result.lead,submittedAt:new Date().toISOString(),sourceUrl:cleanSource(data.sourceUrl,siteOrigin)};
 
- const [forms,crm]=await Promise.allSettled([toNetlifyForms(lead,siteOrigin),toCrm(lead)]);
+ const [forms,crm]=await Promise.allSettled([toNetlifyForms(lead,siteOrigin),toCrm(lead,relayHeaders(req))]);
  const stored:string[]=[];
  if(forms.status==='fulfilled'&&forms.value)stored.push('netlify-forms');else if(forms.status==='rejected')console.error('[consultation] storage failed:',(forms.reason as Error).message);
  if(crm.status==='fulfilled'&&crm.value)stored.push('crm');else if(crm.status==='rejected')console.error('[consultation] storage failed:',(crm.reason as Error).message);

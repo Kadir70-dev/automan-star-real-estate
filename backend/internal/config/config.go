@@ -12,6 +12,7 @@ type Config struct {
 	DatabaseURL      string
 	RedisURL         string
 	AllowedOrigins   []string
+	ProxySecret      string
 	ReadinessTimeout time.Duration
 }
 
@@ -22,6 +23,7 @@ func Load() Config {
 		DatabaseURL:      env("DATABASE_URL", "postgres://automan:automan_dev_password@localhost:5432/automan?sslmode=disable"),
 		RedisURL:         env("REDIS_URL", "redis://localhost:6379/0"),
 		AllowedOrigins:   strings.Split(env("ALLOWED_ORIGINS", "http://localhost:3000"), ","),
+		ProxySecret:      os.Getenv("TRUSTED_PROXY_SECRET"),
 		ReadinessTimeout: 2 * time.Second,
 	}
 }
