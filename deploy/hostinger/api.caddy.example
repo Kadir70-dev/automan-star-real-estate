@@ -1,0 +1,8 @@
+# OPTIONAL snippet for an already-approved, installed Caddy reverse proxy.
+# Do not replace an existing Caddyfile or bind port 80/443 without checking
+# which websites/services already occupy those ports on the shared Hostinger VPS.
+# Requires DNS A/AAAA for api.amsrealty.tech -> this VPS and owner approval.
+api.amsrealty.tech {
+  encode gzip
+  reverse_proxy 127.0.0.1:18080
+}
