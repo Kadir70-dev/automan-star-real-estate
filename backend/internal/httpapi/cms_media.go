@@ -118,7 +118,6 @@ func (a API) cmsServeMedia(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.Copy(w, file)
 }
 
-
 // Update an existing image's accessibility metadata without replacing the file.
 // This endpoint is admin-only and records an audit event transactionally.
 func (a API) cmsUpdateMedia(w http.ResponseWriter, r *http.Request) {

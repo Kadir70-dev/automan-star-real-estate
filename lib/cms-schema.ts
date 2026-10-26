@@ -27,7 +27,12 @@ export const CMS_PAGES:CmsPageDef[]=[
  {slug:'commercial',name:'Commercial',path:'/commercial',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
  {slug:'properties',name:'Properties',path:'/properties',fields:[field('page.heading','Listings heading'),field('page.copy','Listings description','textarea')]},
  {slug:'experience',name:'3D Experience',path:'/experience',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
- {slug:'privacy',name:'Privacy Policy',path:'/privacy',fields:[]},
+ {slug:'privacy',name:'Privacy Policy',path:'/privacy',fields:[
+  field('privacy.heading','Page heading'),field('privacy.updated','Last reviewed date'),
+  ...[['collection','Information we collect'],['use','How we use it'],['storage','Where it is stored'],['retention','How long we keep it'],['browser','Browser storage'],['choices','Your choices']].flatMap(([key,label])=>[
+   field('privacy.'+key+'.title',label+' heading'),field('privacy.'+key+'.copy',label+' paragraph','textarea')
+  ])
+ ]},
  {slug:'site',name:'Global Settings',path:'/',fields:[
   field('header.logo','Header logo URL','image'),field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.phone','Telephone'),
   field('footer.heading','Footer headline','textarea'),field('footer.cta','Footer button'),field('footer.email','Contact email'),
