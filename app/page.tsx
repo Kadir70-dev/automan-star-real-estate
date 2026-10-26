@@ -40,7 +40,7 @@ export default async function Home(){const cms=await getCms("home");return <main
 
  <section className="home-services" aria-labelledby="services-title">
   <div className="container home-services-grid">
-   <div className="home-services-image"><Image src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=80" alt="Living room with floor-to-ceiling windows" fill sizes="(max-width: 900px) 100vw, 45vw"/></div>
+   <div className="home-services-image"><Image data-cms-image="services.image" unoptimized src={cmsText(cms,'services.image','https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=80')} alt="Living room with floor-to-ceiling windows" fill sizes="(max-width: 900px) 100vw, 45vw"/></div>
    <div>
     <h2 id="services-title" data-cms-field="services.title">{cmsText(cms,'services.title','What we help you buy')}</h2>
     <ul className="home-services-list">{services.map(s=><li key={s.href}><Link href={s.href}><strong>{s.title}</strong><span>{s.copy}</span></Link></li>)}</ul>
