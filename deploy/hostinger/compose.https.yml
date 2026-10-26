@@ -1,0 +1,22 @@
+# OPTIONAL add-on for a VPS without an existing 80/443 reverse proxy.
+# Enable only after the owner confirms api.amsrealty.tech points to this VPS.
+# Usage: -f deploy/hostinger/compose.yml -f deploy/hostinger/compose.https.yml
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [private]
+volumes:
+  caddy_data:
+  caddy_config:
