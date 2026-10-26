@@ -34,7 +34,8 @@ export const CMS_PAGES:CmsPageDef[]=[
   ])
  ]},
  {slug:'site',name:'Global Settings',path:'/',fields:[
-  field('header.logo','Header logo URL','image'),field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.phone','Telephone'),
+  field('header.logo','Header logo URL','image'),field('header.favicon','Favicon URL','image'),
+  field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.locality','Area / locality'),field('business.region','Emirate'),field('business.phone','Telephone'),
   field('footer.heading','Footer headline','textarea'),field('footer.cta','Footer button'),field('footer.email','Contact email'),
   field('social.linkedin','LinkedIn URL','link'),field('social.instagram','Instagram URL','link'),
   ...[['properties','Properties'],['buy','Buy'],['off-plan','Off-plan'],['commercial','Commercial'],['experience','3D residence'],['about','About'],['contact','Contact']].map(([key,label])=>field('nav.'+key,'Menu: '+label)),

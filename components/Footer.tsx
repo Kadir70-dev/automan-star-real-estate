@@ -5,7 +5,7 @@ import {Instagram,Linkedin,Mail} from 'lucide-react';
 export default function Footer({site}:{site?:CmsDocument}={}){return <footer className="ds-footer">
  <div className="container">
   <div className="ds-footer-lead">
-   <h2 data-cms-field="footer.heading">{site?.fields['footer.heading']??'Thinking about a property in Dubai? Start with a conversation.'}</h2>
+   <h2 >{site?.fields['footer.heading']??'Thinking about a property in Dubai? Start with a conversation.'}</h2>
    <Link href="/contact" className="ds-btn ds-btn-sand">{site?.fields['footer.cta']||'Contact the team'}</Link>
   </div>
   <div className="ds-footer-grid">

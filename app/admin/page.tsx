@@ -15,6 +15,7 @@ export default function AdminStudio(){
  const[staff,setStaff]=useState<Staff|null>(null),[loaded,setLoaded]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[slug,setSlug]=useState('home'),[page,setPage]=useState<PageResponse>(emptyPage('home')),[draft,setDraft]=useState<CmsDocument>(emptyPage('home').draft),[versions,setVersions]=useState<Version[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
  const[media,setMedia]=useState<Media[]>([]);
  const[activeImageField,setActiveImageField]=useState('');
+ const[cropMode,setCropMode]=useState<'original'|'wide'|'square'>('original');
  const[altDrafts,setAltDrafts]=useState<Record<string,string>>({});
  const dirty=JSON.stringify(draft)!==JSON.stringify(page.draft);
  const selected=useMemo(()=>CMS_PAGES.find(p=>p.slug===slug)!,[slug]);
@@ -28,7 +29,26 @@ export default function AdminStudio(){
  useEffect(()=>{if(staff?.role==='admin')void loadMedia()},[staff?.role]);
  useEffect(()=>{if(staff?.role!=='admin')return;setMessage('');setError('');void loadPage(slug).catch(e=>setError(e.message))},[slug,staff?.role,loadPage]);
  async function loadMedia(){const response=await fetch('/api/cms/admin/media',{cache:'no-store'});if(response.ok)setMedia((await response.json()).data||[])}
- async function uploadMedia(file:File){setBusy(true);setError('');try{const form=new FormData();form.append('file',file);const response=await fetch('/api/cms/admin/media',{method:'POST',body:form});const data=await readJSON(response);await loadMedia();setMessage('Image uploaded: '+data.url+'. Select a page image field to use it.')}catch(e){setError(e instanceof Error?e.message:'Upload failed')}finally{setBusy(false)}}
+ async function prepareUpload(file:File):Promise<File>{
+  if(cropMode==='original')return file;
+  const bitmap=await createImageBitmap(file);
+  try{
+   const ratio=cropMode==='wide'?16/9:1;
+   const width=Math.min(bitmap.width,bitmap.height*ratio),height=width/ratio;
+   const left=(bitmap.width-width)/2,top=(bitmap.height-height)/2;
+   const canvas=document.createElement('canvas');
+   canvas.width=Math.max(1,Math.round(Math.min(width,2400)));
+   canvas.height=Math.max(1,Math.round(canvas.width/ratio));
+   const ctx=canvas.getContext('2d');
+   if(!ctx)throw Error('Image editor unavailable');
+   ctx.drawImage(bitmap,left,top,width,height,0,0,canvas.width,canvas.height);
+   const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(Error('Image conversion failed')),'image/webp',0.86));
+   return new File([blob],file.name.replace(/\.[^.]+$/,'')+'-cropped.webp',{type:'image/webp'});
+  }finally{bitmap.close()}
+ }
+ async function uploadMedia(file:File){setBusy(true);setError('');try{
+  const prepared=await prepareUpload(file);
+  const form=new FormData();form.append('file',prepared);const response=await fetch('/api/cms/admin/media',{method:'POST',body:form});const data=await readJSON(response);await loadMedia();setMessage('Image uploaded: '+data.url+'. Select a page image field to use it.')}catch(e){setError(e instanceof Error?e.message:'Upload failed')}finally{setBusy(false)}}
  async function saveMediaAlt(id:string){
   setBusy(true);setError('');
   try{
@@ -81,6 +101,11 @@ export default function AdminStudio(){
  </div>
  <div className="cms-panel"><h2>Media Library</h2><p className="cms-muted">Upload JPEG, PNG or WebP (10MB max). Focus an image field above, then choose a library image. Alt text can be edited below.</p>
  <p className="cms-muted" role="status">Selected image field: <strong>{activeImageField||'Click any image field first'}</strong></p>
+ <label>Image upload mode<select value={cropMode} onChange={e=>setCropMode(e.target.value as 'original'|'wide'|'square')}>
+ <option value="original">Original image (no changes)</option>
+ <option value="wide">Center crop 16:9 (max 2400px, WebP)</option>
+ <option value="square">Center crop 1:1 (max 2400px, WebP)</option>
+ </select></label>
  <label>Upload new image<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e=>{const file=e.target.files?.[0];if(file)void uploadMedia(file);e.target.value=''}}/></label>
  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12}}>{media.map(m=><div key={m.id} style={{border:'1px solid #e5e6e1',padding:10,borderRadius:8}}><img src={m.url} alt={m.alt_text||m.filename} style={{width:'100%',height:105,objectFit:'cover',borderRadius:5}}/><p className="cms-muted" style={{overflowWrap:'anywhere'}}>{m.filename}</p><div className="cms-actions"><button className="cms-button secondary" disabled={!activeImageField||busy} type="button" onClick={()=>{setField(activeImageField,m.url);setMessage('Image selected for '+activeImageField+'. Publish to make it live.')}}>Use image</button><button className="cms-button secondary" type="button" onClick={()=>navigator.clipboard.writeText(m.url)}>Copy URL</button></div><label style={{marginTop:12}}>Image description (alt text)<input value={altDrafts[m.id]??m.alt_text} maxLength={300} onChange={e=>setAltDrafts(d=>({...d,[m.id]:e.target.value}))}/></label><button className="cms-button secondary" disabled={busy} onClick={()=>void saveMediaAlt(m.id)}>Save alt text</button></div>)}</div>
  </div>
