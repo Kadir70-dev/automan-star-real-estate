@@ -38,6 +38,23 @@ jobs:
       - name: Next.js production build
         working-directory: frontend
         run: npm run build
+      - name: Hostinger production compose configuration is isolated
+        env:
+          POSTGRES_PASSWORD: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          ADMIN_API_KEY: 1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+          ALLOWED_ORIGINS: https://automanstarrealty.com,https://www.automanstarrealty.com
+        run: |
+          docker compose -f deploy/hostinger/compose.yml config -q
+          # Ensure only the API is bound, and only on loopback. PostgreSQL/Redis must not publish ports.
+          docker compose -f deploy/hostinger/compose.yml config --format json | python3 -c '
+          import json,sys
+          services=json.load(sys.stdin)["services"]
+          assert "ports" not in services["postgres"]
+          assert "ports" not in services["redis"]
+          ports=services["api"].get("ports",[])
+          assert len(ports)==1 and ports[0]["host_ip"]=="127.0.0.1" and ports[0]["target"]==8080
+          print("Hostinger compose bind policy PASS")
+          '
       - name: Docker compose and API smoke checks
         env:
           POSTGRES_PASSWORD: ci-local-db-password-only
