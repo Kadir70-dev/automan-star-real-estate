@@ -2,6 +2,7 @@ import Link from 'next/link';
 import SearchBar from './SearchBar';
 import HeroBannerSlider from './HeroBannerSlider';
 import {publishedCMS, type CMSHome} from '@/lib/cms';
+import CMSInlineHeroEdit from './CMSInlineHeroEdit';
 export default async function Hero(){
  const content=await publishedCMS<CMSHome>('home');
  const heading=typeof content?.heading==='string' && content.heading.trim()?content.heading:'Buy well in Dubai.';
@@ -19,5 +20,6 @@ export default async function Hero(){
    <div className="hero-ds-actions"><Link href={allowedHref} className="ds-btn ds-btn-sand">{primaryLabel}</Link><Link href="/contact" className="ds-btn ds-btn-glass">Book a consultation</Link></div>
   </div>
   <SearchBar/>
+  <CMSInlineHeroEdit/>
  </div>
 </section>}
