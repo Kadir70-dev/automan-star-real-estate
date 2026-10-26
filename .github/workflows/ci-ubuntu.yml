@@ -52,6 +52,7 @@ jobs:
           ALLOWED_ORIGINS: https://automanstarrealty.com,https://www.automanstarrealty.com
         run: |
           docker compose -f deploy/hostinger/compose.yml config -q
+          docker compose -f deploy/hostinger/compose.yml -f deploy/hostinger/compose.https.yml config -q
           # Ensure only the API is bound, and only on loopback. PostgreSQL/Redis must not publish ports.
           docker compose -f deploy/hostinger/compose.yml config --format json | python3 -c '
           import json,sys
