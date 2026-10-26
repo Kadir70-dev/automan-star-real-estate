@@ -8,11 +8,14 @@ import {LEADERSHIP} from '@/lib/leadership';
 import './home.css';
 import type {Metadata} from 'next';
 import {pageMetadata} from '@/lib/seo';
+import {publishedCMS,type CMSHome} from '@/lib/cms';
 
-export const metadata:Metadata={
- ...pageMetadata({path:'/',title:'Automan Star Real Estate',description:'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.',socialTitle:'Automan Star Real Estate | Dubai Real Estate Agency'}),
- title:{absolute:'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay'},
-};
+export async function generateMetadata():Promise<Metadata>{
+ const content=await publishedCMS<CMSHome>('home');
+ const title=typeof content?.seo?.title==='string'&&content.seo.title.trim()?content.seo.title.slice(0,120):'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay';
+ const description=typeof content?.seo?.description==='string'&&content.seo.description.trim()?content.seo.description.slice(0,300):'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.';
+ return {...pageMetadata({path:'/',title,description,socialTitle:title}),title:{absolute:title}};
+}
 
 const services=[
  {href:'/buy',title:'Ready homes',copy:'Apartments, villas and townhouses ready for handover now.'},
