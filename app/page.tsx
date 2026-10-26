@@ -25,7 +25,7 @@ const services=[
 
 export default async function Home(){const cms=await getCms("home");return <main className="home">
  <Hero cms={cms}/>
- <ArchitecturalStory/>
+ <ArchitecturalStory cms={cms}/>
 
  <section className="home-collection" aria-labelledby="collection-title">
   <div className="container">

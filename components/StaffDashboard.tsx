@@ -51,9 +51,9 @@ export default function StaffDashboard({mode='overview'}:{mode?:'overview'|'sett
  {staff&&<><p>Signed in as {staff.name} ({staff.role}). This dashboard never displays sample leads or demo KPIs.</p>
  {mode==='overview'&&<>
  {counts?<div className="p1-stat-grid">
- <div className="p1-panel"><h2>{counts.properties}</h2><p>Property records</p></div>
- <div className="p1-panel"><h2>{counts.leads}</h2><p>Real enquiries</p></div>
- <div className="p1-panel"><h2>{counts.visits}</h2><p>Viewing requests</p></div>
+ <div className="p1-panel"><h2>{counts.properties}</h2><p>Recent property records (max 100)</p></div>
+ <div className="p1-panel"><h2>{counts.leads}</h2><p>Recent real enquiries (max 100)</p></div>
+ <div className="p1-panel"><h2>{counts.visits}</h2><p>Recent viewing requests (max 100)</p></div>
  </div>:!error&&<p>Loading live counts from PostgreSQL…</p>}
  <div className="p1-stat-grid">{pages.filter(p=>p[0]!=='/admin'||staff.role==='admin').map(([href,title,copy])=><div className="p1-panel" key={href}><h2>{title}</h2><p>{copy}</p><Link href={href}>Open {title} →</Link></div>)}</div>
  </>}
