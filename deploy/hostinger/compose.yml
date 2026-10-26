@@ -1,0 +1,77 @@
+# Dedicated Hostinger VPS stack for Automan Star Realty API.
+# Does not publish PostgreSQL or Redis. Does not bind public ports 80/443.
+# Run from the repository root with --env-file deploy/hostinger/.env.production.
+name: automanstar-api
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: automan
+      POSTGRES_USER: automan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a URL-safe password in .env.production}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U automan -d automan"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [private]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [private]
+
+  api:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://automan:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/automan?sslmode=disable"
+      REDIS_URL: "redis://redis:6379/0"
+      ADMIN_API_KEY: "${ADMIN_API_KEY:?Set ADMIN_API_KEY}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:?Set strict HTTPS allowed origins}"
+      MEDIA_DIR: /app/media
+    ports:
+      - "127.0.0.1:${AUTOMAN_API_LOOPBACK_PORT:-18080}:8080"
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health/ready"]
+      interval: 15s
+      timeout: 4s
+      retries: 6
+      start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    networks: [private]
+
+networks:
+  private:
+    driver: bridge
+
+volumes:
+  pg_data:
+  redis_data:
+  media_data:
