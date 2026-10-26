@@ -18,8 +18,8 @@ export default function Header({site}:{site?:CmsDocument}={}){
   <div className="nav-inner container">
    <Link className="brand" href="/" onClick={()=>setOpen(false)} aria-label="AMS Realty, Automan Star Real Estate home"><Image className="brand-logo" data-cms-image="header.logo" src={site?.fields['header.logo']||'/saudlogo-nav-mark.png'} alt="AMS Realty" width={223} height={129} priority unoptimized/></Link>
    <nav id="main-navigation" className={'navigation'+(open?' open':'')} aria-label="Primary navigation">
-    {nav.map(([href,name])=><Link key={href} href={href} onClick={()=>setOpen(false)} className={isActive(href)?'active':''} aria-current={isActive(href)?'page':undefined}>{name}</Link>)}
-    <Link href="/contact" className="nav-mobile-contact" onClick={()=>setOpen(false)}>Contact</Link>
+    {nav.map(([href,name])=><Link key={href} href={href} onClick={()=>setOpen(false)} className={isActive(href)?'active':''} aria-current={isActive(href)?'page':undefined}>{site?.fields['nav.'+href.substring(1)]||name}</Link>)}
+    <Link href="/contact" className="nav-mobile-contact" onClick={()=>setOpen(false)}>{site?.fields['nav.contact']||'Contact'}</Link>
    </nav>
    <Link href="/contact" className="ds-btn ds-btn-line nav-cta">Contact</Link>
    <button className="mobile-toggle" onClick={()=>setOpen(!open)} aria-controls="main-navigation" aria-expanded={open} aria-label={open?'Close menu':'Open menu'}>{open?<X/>:<Menu/>}</button>

@@ -1,28 +1,38 @@
 export type CmsField={key:string;label:string;type?:'text'|'textarea'|'image'|'link'};
 export type CmsPageDef={slug:string;name:string;path:string;fields:CmsField[]};
+const field=(key:string,label:string,type:CmsField['type']='text'):CmsField=>({key,label,type});
+const home:CmsField[]=[
+ field('hero.title','Hero headline'),field('hero.description','Hero description','textarea'),
+ field('hero.image','Hero first image','image'),field('hero.image2','Hero second image','image'),field('hero.image3','Hero third image','image'),
+ field('hero.buy_cta','Browse properties button'),field('hero.contact_cta','Consultation button'),
+ field('collection.title','Collection heading'),field('collection.cta','Collection button'),field('collection.note','Concept listings disclosure','textarea'),
+ field('services.title','Services heading'),field('services.image','Services image','image'),
+ ...[['buy','Ready homes'],['offplan','Off-plan'],['commercial','Commercial']].flatMap(([key,label])=>[field('services.'+key+'.title',label+' title'),field('services.'+key+'.copy',label+' description','textarea')]),
+ field('areas.title','Communities heading'),
+ ...['Downtown Dubai','Dubai Marina','Palm Jumeirah'].flatMap((name,i)=>[field('areas.'+i+'.title',name+' display name'),field('areas.'+i+'.image',name+' image','image')]),
+ field('team.title','Leadership heading'),field('team.office','Team office address','textarea'),
+ ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')]),
+ field('tour.title','3D tour heading'),field('tour.description','3D tour description','textarea'),field('tour.cta','3D tour button')
+];
 export const CMS_PAGES:CmsPageDef[]=[
- {slug:'home',name:'Homepage',path:'/',fields:[
-  {key:'hero.title',label:'Hero heading'},{key:'hero.description',label:'Hero description',type:'textarea'},
-  {key:'hero.image',label:'Hero slide image URL',type:'image'},
-  {key:'collection.title',label:'Collection heading'},{key:'collection.note',label:'Concept listing notice',type:'textarea'},
-  {key:'services.title',label:'Services heading'},{key:'services.image',label:'Services image URL',type:'image'},
-  {key:'areas.title',label:'Communities heading'}, {key:'team.title',label:'Team heading'},
-  {key:'tour.title',label:'3D tour heading'},{key:'tour.description',label:'3D tour description',type:'textarea'}]},
+ {slug:'home',name:'Homepage',path:'/',fields:home},
  {slug:'about',name:'About Us',path:'/about',fields:[
-  {key:'about.heading',label:'Page heading'},{key:'about.image',label:'About image URL',type:'image'},
-  {key:'about.title',label:'Story heading'},{key:'about.copy',label:'Company story',type:'textarea'},
-  {key:'about.leadership_title',label:'Leadership heading'}]},
- {slug:'contact',name:'Contact',path:'/contact',fields:[
-  {key:'contact.heading',label:'Page heading'}, {key:'contact.copy',label:'Introduction',type:'textarea'},
-  {key:'contact.form_heading',label:'Form heading'}]},
- {slug:'buy',name:'Buy',path:'/buy',fields:[{key:'page.heading',label:'Page heading'},{key:'page.copy',label:'Intro text',type:'textarea'}]},
- {slug:'off-plan',name:'Off-plan',path:'/off-plan',fields:[{key:'page.heading',label:'Page heading'},{key:'page.copy',label:'Intro text',type:'textarea'}]},
- {slug:'commercial',name:'Commercial',path:'/commercial',fields:[{key:'page.heading',label:'Page heading'},{key:'page.copy',label:'Intro text',type:'textarea'}]},
- {slug:'properties',name:'Properties',path:'/properties',fields:[]},
- {slug:'experience',name:'3D Experience',path:'/experience',fields:[{key:'page.heading',label:'Page heading'},{key:'page.copy',label:'Intro text',type:'textarea'}]},
+  field('about.heading','Page heading'),field('about.image','About image','image'),field('about.title','Story heading'),
+  field('about.copy','Company story','textarea'),field('about.secondary_copy','Second story paragraph','textarea'),field('about.cta','Contact button'),
+  field('about.leadership_title','Leadership heading'),
+  ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')])]},
+ {slug:'contact',name:'Contact',path:'/contact',fields:[field('contact.heading','Page heading'),field('contact.copy','Introduction','textarea'),field('contact.form_heading','Form heading')]},
+ {slug:'buy',name:'Buy',path:'/buy',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
+ {slug:'off-plan',name:'Off-plan',path:'/off-plan',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
+ {slug:'commercial',name:'Commercial',path:'/commercial',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
+ {slug:'properties',name:'Properties',path:'/properties',fields:[field('page.heading','Listings heading'),field('page.copy','Listings description','textarea')]},
+ {slug:'experience',name:'3D Experience',path:'/experience',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
  {slug:'privacy',name:'Privacy Policy',path:'/privacy',fields:[]},
  {slug:'site',name:'Global Settings',path:'/',fields:[
-  {key:'footer.heading',label:'Footer lead heading'},
-  {key:'footer.email',label:'Contact email'},
-  {key:'header.logo',label:'Header logo URL',type:'image'}]}
+  field('header.logo','Header logo URL','image'),field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.phone','Telephone'),
+  field('footer.heading','Footer headline','textarea'),field('footer.cta','Footer button'),field('footer.email','Contact email'),
+  field('social.linkedin','LinkedIn URL','link'),field('social.instagram','Instagram URL','link'),
+  ...[['properties','Properties'],['buy','Buy'],['off-plan','Off-plan'],['commercial','Commercial'],['experience','3D residence'],['about','About'],['contact','Contact']].map(([key,label])=>field('nav.'+key,'Menu: '+label)),
+  ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')])
+ ]}
 ];
