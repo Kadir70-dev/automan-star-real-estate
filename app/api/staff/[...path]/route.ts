@@ -1,12 +1,12 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {isSameOrigin} from '@/lib/same-origin';
 import {relayHeaders} from '@/lib/backend-relay';
 export const runtime='nodejs';
 type Ctx={params:Promise<{path:string[]}>};
 async function forward(req:NextRequest,ctx:Ctx){
  const {path}=await ctx.params;
  if(!['GET','HEAD'].includes(req.method)){
-  const origin=req.headers.get('origin');
-  if(req.headers.get('sec-fetch-site')==='cross-site'||(origin&&origin!==new URL(req.url).origin))return NextResponse.json({error:'Cross-origin request blocked'},{status:403});
+  if(!isSameOrigin(req))return NextResponse.json({error:'Cross-origin request blocked'},{status:403});
  }
  const uuid=/^[a-f0-9-]{36}$/i;
  const allowed=(path.length===1&&['login','logout','me','properties','leads','visits'].includes(path[0])) ||

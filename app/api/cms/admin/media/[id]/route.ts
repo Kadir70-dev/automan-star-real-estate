@@ -1,11 +1,11 @@
 import {NextRequest,NextResponse} from 'next/server';
+import {isSameOrigin} from '@/lib/same-origin';
 export const runtime='nodejs';
 type Ctx={params:Promise<{id:string}>};
 export async function PATCH(req:NextRequest,ctx:Ctx){
  const {id}=await ctx.params;
  if(!/^[\da-f]{8}(-[\da-f]{4}){3}-[\da-f]{12}$/i.test(id))return NextResponse.json({error:'Invalid media ID'},{status:400});
- const origin=req.headers.get('origin');
- if(req.headers.get('sec-fetch-site')==='cross-site'||(origin&&origin!==new URL(req.url).origin))
+ if(!isSameOrigin(req))
   return NextResponse.json({error:'Cross-origin request blocked'},{status:403});
  const base=process.env.BACKEND_INTERNAL_URL;
  if(!base)return NextResponse.json({error:'CMS backend not configured'},{status:503});

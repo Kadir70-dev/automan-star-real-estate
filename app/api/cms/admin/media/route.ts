@@ -1,11 +1,11 @@
 import {NextRequest,NextResponse} from 'next/server';
+import {isSameOrigin} from '@/lib/same-origin';
 export const runtime='nodejs';
 async function mediaProxy(req:NextRequest){
  const base=process.env.BACKEND_INTERNAL_URL;
  if(!base)return NextResponse.json({error:'CMS backend not configured'},{status:503});
  if(req.method==='POST'){
-  const origin=req.headers.get('origin');
-  if(req.headers.get('sec-fetch-site')==='cross-site'||(origin&&origin!==new URL(req.url).origin))
+  if(!isSameOrigin(req))
    return NextResponse.json({error:'Cross-origin request blocked'},{status:403});
   if(!req.headers.get('content-type')?.startsWith('multipart/form-data'))return NextResponse.json({error:'Expected image upload'},{status:415});
   const size=Number(req.headers.get('content-length')||0);
