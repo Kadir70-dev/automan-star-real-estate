@@ -1,6 +1,8 @@
+import {getCms,cmsText,cmsMetadata} from '@/lib/cms';
 import {pageMetadata} from '@/lib/seo';
-export const metadata=pageMetadata({path:'/privacy',title:'Privacy Policy',description:'How Automan Star Real Estate handles the personal information you share through this website.'});
+const baseMetadata=pageMetadata({path:'/privacy',title:'Privacy Policy',description:'How Automan Star Real Estate handles the personal information you share through this website.'});
 const updated='22 October 2026';
+export async function generateMetadata(){return cmsMetadata(await getCms('privacy'),baseMetadata)}
 export default function Privacy(){return <main className="page-shell privacy-page"><div className="container"><p className="eyebrow dark-eyebrow">LEGAL / PRIVACY</p><h1 className="display-heading">Privacy <em>policy.</em></h1><p className="privacy-updated">Last updated: {updated}</p><div className="privacy-body">
 <section><h2>Information we collect</h2><p>When you submit an enquiry, viewing request or consultation request on this website, we collect the details you provide — such as your name, email address, phone number and the type of property service you are interested in — together with the date and time of submission and the page you submitted it from.</p></section>
 <section><h2>How we use it</h2><p>We use this information only to respond to your request, contact you about your property enquiry and keep a record of our communication with you. We do not sell your personal information.</p></section>
