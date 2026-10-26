@@ -1,6 +1,6 @@
 import 'server-only';
 export type CMSHome={heading?:string;description?:string;primary_button?:{label?:string;href?:string}};
-export async function publishedCMS<T extends Record<string,unknown>>(key:string):Promise<T|null>{
+export async function publishedCMS<T extends object>(key:string):Promise<T|null>{
  const base=process.env.BACKEND_INTERNAL_URL;
  if(!base||!/^[a-z0-9][a-z0-9_-]{0,79}$/.test(key))return null;
  try {
