@@ -1,5 +1,5 @@
-import type {CmsDocument} from '@/lib/cms';
 'use client';
+import type {CmsDocument} from '@/lib/cms';
 import Link from 'next/link';
 import Image from 'next/image';
 import {usePathname} from 'next/navigation';

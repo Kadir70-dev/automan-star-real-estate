@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/mail"
+	"net/url"
+
+	"github.com/jackc/pgx/v5"
 	"regexp"
 	"strings"
 	"time"
@@ -43,7 +47,11 @@ func validCmsURL(value string) bool {
 	if strings.HasPrefix(value, "/") && !strings.HasPrefix(value, "//") {
 		return true
 	}
-	return strings.HasPrefix(value, "https://")
+	if !strings.HasPrefix(value, "https://") {
+		return false
+	}
+	u, err := url.Parse(value)
+	return err == nil && u.Scheme == "https" && u.Host != "" && u.User == nil && !strings.ContainsAny(value, " \t")
 }
 func validCmsDocument(d cmsDocument) bool {
 	if len(d.Fields) > 120 || len(d.SEO.Title) > 140 || len(d.SEO.Description) > 500 || len(d.SEO.OGImage) > 2048 || len(d.SEO.Canonical) > 512 || len(d.SEO.Robots) > 16 {
@@ -58,6 +66,15 @@ func validCmsDocument(d cmsDocument) bool {
 		}
 		if (strings.HasSuffix(k, ".image") || strings.HasSuffix(k, ".href") || strings.HasSuffix(k, ".src") || strings.HasSuffix(k, ".logo")) && !validCmsURL(v) {
 			return false
+		}
+		if strings.HasPrefix(k, "social.") && v != "" && !strings.HasPrefix(v, "https://") {
+			return false
+		}
+		if k == "footer.email" && v != "" {
+			addr, err := mail.ParseAddress(v)
+			if err != nil || addr.Address != v {
+				return false
+			}
 		}
 	}
 	return true
@@ -91,9 +108,13 @@ func (a API) cmsPublicPage(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	var body []byte
 	err := a.DB.QueryRow(ctx, "SELECT published FROM cms_pages WHERE slug=$1", slug).Scan(&body)
-	if err != nil {
-		// Missing record means the existing Next.js fallback content is still in use.
+	if err == pgx.ErrNoRows {
+		// Newly enabled CMS pages safely fall back to existing page copy.
 		respond(w, 200, map[string]any{"slug": slug, "document": cmsDocument{Fields: map[string]string{}}, "published_revision": 0})
+		return
+	}
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "CMS storage unavailable"})
 		return
 	}
 	var doc cmsDocument
@@ -117,9 +138,13 @@ func (a API) cmsAdminPage(w http.ResponseWriter, r *http.Request) {
 	var draft, published []byte
 	var draftRevision, publishedRevision int64
 	err := a.DB.QueryRow(ctx, "SELECT draft,published,draft_revision,published_revision FROM cms_pages WHERE slug=$1", slug).Scan(&draft, &published, &draftRevision, &publishedRevision)
-	if err != nil {
+	if err == pgx.ErrNoRows {
 		empty := cmsDocument{Fields: map[string]string{}}
 		respond(w, 200, map[string]any{"slug": slug, "draft": empty, "published": empty, "draft_revision": 0, "published_revision": 0})
+		return
+	}
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "CMS storage unavailable"})
 		return
 	}
 	var d, p cmsDocument
