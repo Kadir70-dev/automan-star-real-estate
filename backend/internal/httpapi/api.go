@@ -100,7 +100,7 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("POST /api/v1/cms/admin/pages/{slug}/publish", a.requireRole("admin")(a.cmsPublish))
 	mux.HandleFunc("GET /api/v1/cms/admin/pages/{slug}/versions", a.requireRole("admin")(a.cmsVersions))
 	mux.HandleFunc("POST /api/v1/cms/admin/pages/{slug}/rollback", a.requireRole("admin")(a.cmsRollback))
-	
+
 	mux.HandleFunc("POST /api/v1/staff/login", a.login)
 	mux.HandleFunc("POST /api/v1/staff/logout", a.logout)
 	mux.HandleFunc("GET /api/v1/staff/me", a.me)
