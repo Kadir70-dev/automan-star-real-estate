@@ -1,0 +1,5 @@
+# Dedicated API hostname only. Existing public Next.js stays on Netlify.
+api.amsrealty.tech {
+    encode gzip zstd
+    reverse_proxy api:8080
+}
