@@ -3,7 +3,7 @@ import Link from 'next/link';
 import SearchBar from './SearchBar';
 import HeroBannerSlider from './HeroBannerSlider';
 export default function Hero({cms}:{cms:CmsDocument}){return <section className="hero-ds" aria-labelledby="hero-title">
- <HeroBannerSlider/>
+ <HeroBannerSlider primaryImage={cms.fields['hero.image']||undefined}/>
  <div className="hero-ds-shade" aria-hidden="true"/>
  <div className="container hero-ds-inner">
   <div className="hero-ds-copy">
