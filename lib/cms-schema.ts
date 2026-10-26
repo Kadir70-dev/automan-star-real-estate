@@ -19,6 +19,12 @@ const home:CmsField[]=[
  ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')]),
  field('tour.title','3D tour heading'),field('tour.description','3D tour description','textarea'),field('tour.cta','3D tour button')
 ];
+const guideFields:CmsField[]=[
+ field('page.cta','Primary button'),field('page.cta.href','Primary button link','link'),
+ field('guide.title','Guide heading'),field('guide.intro','Guide introduction','textarea'),
+ ...[0,1,2].flatMap(i=>[field('guide.'+i+'.title','Guide item '+(i+1)+' heading'),field('guide.'+i+'.copy','Guide item '+(i+1)+' paragraph','textarea')]),
+ field('guide.cta.lead','Guide closing text','textarea'),field('guide.cta.label','Guide link label'),field('guide.cta.href','Guide link destination','link')
+];
 export const CMS_PAGES:CmsPageDef[]=[
  {slug:'home',name:'Homepage',path:'/',fields:home},
  {slug:'about',name:'About Us',path:'/about',fields:[
@@ -27,9 +33,9 @@ export const CMS_PAGES:CmsPageDef[]=[
   field('about.leadership_title','Leadership heading'),
   ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')])]},
  {slug:'contact',name:'Contact',path:'/contact',fields:[field('contact.heading','Page heading'),field('contact.copy','Introduction','textarea'),field('contact.form_heading','Form heading')]},
- {slug:'buy',name:'Buy',path:'/buy',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
- {slug:'off-plan',name:'Off-plan',path:'/off-plan',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
- {slug:'commercial',name:'Commercial',path:'/commercial',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
+ {slug:'buy',name:'Buy',path:'/buy',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea'),...guideFields]},
+ {slug:'off-plan',name:'Off-plan',path:'/off-plan',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea'),...guideFields]},
+ {slug:'commercial',name:'Commercial',path:'/commercial',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea'),...guideFields]},
  {slug:'properties',name:'Properties',path:'/properties',fields:[field('page.heading','Listings heading'),field('page.copy','Listings description','textarea')]},
  {slug:'experience',name:'3D Experience',path:'/experience',fields:[field('page.heading','Page heading'),field('page.copy','Intro text','textarea')]},
  {slug:'privacy',name:'Privacy Policy',path:'/privacy',fields:[
