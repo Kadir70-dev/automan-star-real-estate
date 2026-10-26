@@ -1,8 +1,8 @@
-import {cmsText,type CmsDocument} from '@/lib/cms';
+import {cmsText,EMPTY_CMS,type CmsDocument} from '@/lib/cms';
 import Link from 'next/link';
 import SearchBar from './SearchBar';
 import HeroBannerSlider from './HeroBannerSlider';
-export default function Hero({cms}:{cms:CmsDocument}){return <section className="hero-ds" aria-labelledby="hero-title">
+export default function Hero({cms=EMPTY_CMS}:{cms?:CmsDocument}={}){return <section className="hero-ds" aria-labelledby="hero-title">
  <HeroBannerSlider primaryImage={cms.fields['hero.image']||undefined}/>
  <div className="hero-ds-shade" aria-hidden="true"/>
  <div className="container hero-ds-inner">
