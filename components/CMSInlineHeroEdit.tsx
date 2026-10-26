@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
-type EditorState={heading:string;description:string;primary_button:{label:string;href:string}};
-const defaults:EditorState={heading:'Buy well in Dubai.',description:'Apartments, villas, off-plan and commercial property, advised from our office in Business Bay.',primary_button:{label:'Browse properties',href:'/properties'}};
+type EditorState={heading:string;description:string;primary_button:{label:string;href:string};seo:{title:string;description:string}};
+const defaults:EditorState={heading:'Buy well in Dubai.',description:'Apartments, villas, off-plan and commercial property, advised from our office in Business Bay.',primary_button:{label:'Browse properties',href:'/properties'},seo:{title:'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay',description:'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.'}};
 export default function CMSInlineHeroEdit(){
  const [isAdmin,setAdmin]=useState(false),[open,setOpen]=useState(false),[value,setValue]=useState<EditorState>(defaults),[rev,setRev]=useState(0),[notice,setNotice]=useState(''),[saving,setSaving]=useState(false);
  useEffect(()=>{
@@ -14,7 +14,7 @@ export default function CMSInlineHeroEdit(){
   setNotice('');
   try{
    const response=await fetch('/api/cms/admin/pages/home',{cache:'no-store'});
-   if(response.ok){const data=await response.json();setRev(data.draft_revision);setValue({...defaults,...data.draft,primary_button:{...defaults.primary_button,...data.draft?.primary_button}})}
+   if(response.ok){const data=await response.json();setRev(data.draft_revision);setValue({...defaults,...data.draft,primary_button:{...defaults.primary_button,...data.draft?.primary_button},seo:{...defaults.seo,...data.draft?.seo}})}
    else if(response.status===404){setRev(0);setValue(defaults)}
    else throw Error('Unable to load CMS draft');
    setOpen(true);
@@ -47,6 +47,9 @@ export default function CMSInlineHeroEdit(){
      <label>Description<textarea style={input} rows={4} maxLength={600} value={value.description} onChange={e=>setValue({...value,description:e.target.value})}/></label>
      <label>Button label<input style={input} maxLength={60} value={value.primary_button.label} onChange={e=>setValue({...value,primary_button:{...value.primary_button,label:e.target.value}})}/></label>
      <label>Button path<input style={input} maxLength={120} value={value.primary_button.href} onChange={e=>setValue({...value,primary_button:{...value.primary_button,href:e.target.value}})}/></label>
+     <h3>Search Engine Metadata</h3>
+     <label>SEO title<input style={input} maxLength={120} value={value.seo.title} onChange={e=>setValue({...value,seo:{...value.seo,title:e.target.value}})}/></label>
+     <label>Meta description<textarea style={input} rows={3} maxLength={300} value={value.seo.description} onChange={e=>setValue({...value,seo:{...value.seo,description:e.target.value}})}/></label>
      <div style={{display:'flex',gap:12,flexWrap:'wrap'}}><button type='button' disabled={saving} style={button} onClick={()=>void save(false)}>Save draft</button><button type='button' disabled={saving} style={{...button,background:'#17383e',color:'#fff'}} onClick={()=>void save(true)}>Save & Publish</button></div>
      {notice&&<p role='status'>{notice}</p>}
     </div>
