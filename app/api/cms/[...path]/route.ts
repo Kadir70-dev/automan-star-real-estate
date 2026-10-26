@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from 'next/server';
+import {isSameOrigin} from '@/lib/same-origin';
 export const runtime='nodejs';
 type Ctx={params:Promise<{path:string[]}>};
 const slugOK=/^(home|about|contact|buy|off-plan|commercial|properties|experience|privacy|site)$/;
@@ -15,8 +16,7 @@ async function proxy(request:NextRequest,context:Ctx){
  }
  if(!route)return NextResponse.json({error:'Not found'},{status:404});
  if(!['GET','HEAD'].includes(request.method)){
-  const origin=request.headers.get('origin');
-  if(request.headers.get('sec-fetch-site')==='cross-site'||(origin&&origin!==new URL(request.url).origin))
+  if(!isSameOrigin(request))
    return NextResponse.json({error:'Cross-origin request blocked'},{status:403});
  }
  const base=process.env.BACKEND_INTERNAL_URL;

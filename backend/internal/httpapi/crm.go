@@ -2,9 +2,11 @@ package httpapi
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
@@ -64,11 +66,7 @@ func (a API) limit(w http.ResponseWriter, r *http.Request) bool {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
-	ip := r.RemoteAddr // only use socket peer, not spoofable X-Forwarded-For
-	if i := strings.LastIndex(ip, ":"); i >= 0 {
-		ip = ip[:i]
-	}
-	key := "automan:crm:limit:" + ip + ":" + time.Now().UTC().Format("200601021504")
+	key := "automan:crm:limit:" + a.clientKey(r) + ":" + time.Now().UTC().Format("200601021504")
 	n, err := a.Redis.Incr(ctx, key).Result()
 	if err != nil {
 		respond(w, 503, map[string]string{"error": "service temporarily unavailable"})
@@ -83,6 +81,23 @@ func (a API) limit(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	return true
+}
+
+// clientKey identifies the caller for rate limiting. The socket peer is used unless the
+// request carries the shared relay secret, in which case the relay-supplied visitor IP is
+// trusted. X-Forwarded-For is never trusted because any client can set it.
+func (a API) clientKey(r *http.Request) string {
+	if len(a.ProxySecret) >= 32 && subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Automan-Proxy-Secret")), []byte(a.ProxySecret)) == 1 {
+		if ip := net.ParseIP(strings.TrimSpace(r.Header.Get("X-Automan-Client-IP"))); ip != nil {
+			return "relay:" + ip.String()
+		}
+		return "relay:unknown"
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		host = r.RemoteAddr
+	}
+	return "peer:" + host
 }
 func (a API) createLead(w http.ResponseWriter, r *http.Request) {
 	if a.DB == nil {

@@ -1,5 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server';
+import {isSameOrigin,publicOrigin} from '@/lib/same-origin';
 import {validateLead,type CleanLead} from '@/lib/consultation-lead';
+import {relayHeaders} from '@/lib/backend-relay';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
@@ -24,11 +26,6 @@ function rateLimited(ip:string){
  if(hits.size>5000)for(const [k,v] of hits)if(!v.some(t=>now-t<WINDOW_MS))hits.delete(k);
  return recent.length>MAX_PER_WINDOW;
 }
-function sameOrigin(req:NextRequest){
- if(req.headers.get('sec-fetch-site')==='cross-site')return false;
- const origin=req.headers.get('origin');
- return !origin||origin===new URL(req.url).origin;
-}
 function cleanSource(raw:unknown,siteOrigin:string){
  try{const u=new URL(String(raw));if(u.origin!==siteOrigin)return siteOrigin+'/';u.hash='';return u.toString().slice(0,500)}catch{return siteOrigin+'/'}
 }
@@ -47,10 +44,10 @@ async function toNetlifyForms(lead:Lead,siteOrigin:string){
  throw new Error('netlify-forms status '+r.status);
 }
 
-async function toCrm(lead:Lead){
+async function toCrm(lead:Lead,relay:Record<string,string>){
  const base=process.env.BACKEND_INTERNAL_URL;
  if(!base)return null;
- const r=await fetch(`${base}/api/v1/leads`,{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000),
+ const r=await fetch(`${base}/api/v1/leads`,{method:'POST',headers:{'Content-Type':'application/json',...relay},cache:'no-store',signal:AbortSignal.timeout(8000),
   body:JSON.stringify({name:lead.name,email:lead.email,phone:lead.phoneE164,property:'Consultation popup',message:`Interested in: ${lead.interest}\nSource page: ${lead.sourceUrl}\nSubmitted: ${lead.submittedAt}`.slice(0,3000)})});
  if(r.ok)return true;
  throw new Error('crm status '+r.status);
@@ -69,7 +66,7 @@ async function sendEmail(lead:Lead){
 }
 
 export async function POST(req:NextRequest){
- if(!sameOrigin(req))return json({error:'Request blocked.'},403);
+ if(!isSameOrigin(req))return json({error:'Request blocked.'},403);
  if(!req.headers.get('content-type')?.includes('application/json'))return json({error:'Unsupported request.'},415);
  let data:Record<string,unknown>;
  try{const raw=await req.text();if(raw.length>4096)return json({error:'Request too large.'},413);data=JSON.parse(raw);if(!data||typeof data!=='object'||Array.isArray(data))throw 0}catch{return json({error:'Invalid request.'},400)}
@@ -83,10 +80,10 @@ export async function POST(req:NextRequest){
  const result=validateLead({name:data.name as string,email:data.email as string,country:data.country as string,phone:data.phone as string,interest:data.interest as string,consent:data.consent as boolean});
  if(!result.ok)return json({error:'Please correct the highlighted fields.',fields:result.errors},422);
 
- const siteOrigin=new URL(req.url).origin;
+ const siteOrigin=publicOrigin(req);
  const lead:Lead={...result.lead,submittedAt:new Date().toISOString(),sourceUrl:cleanSource(data.sourceUrl,siteOrigin)};
 
- const [forms,crm]=await Promise.allSettled([toNetlifyForms(lead,siteOrigin),toCrm(lead)]);
+ const [forms,crm]=await Promise.allSettled([toNetlifyForms(lead,siteOrigin),toCrm(lead,relayHeaders(req))]);
  const stored:string[]=[];
  if(forms.status==='fulfilled'&&forms.value)stored.push('netlify-forms');else if(forms.status==='rejected')console.error('[consultation] storage failed:',(forms.reason as Error).message);
  if(crm.status==='fulfilled'&&crm.value)stored.push('crm');else if(crm.status==='rejected')console.error('[consultation] storage failed:',(crm.reason as Error).message);

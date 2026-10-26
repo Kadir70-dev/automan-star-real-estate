@@ -16,6 +16,8 @@ type API struct {
 	Redis          *redis.Client
 	AdminKey       string
 	AllowedOrigins []string
+	// ProxySecret lets the Netlify server relay pass the visitor IP for rate limiting.
+	ProxySecret string
 }
 type dependency struct {
 	Status string `json:"status"`

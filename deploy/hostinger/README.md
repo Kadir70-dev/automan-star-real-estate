@@ -108,10 +108,13 @@ visit request → saved visit; login → role check; published listing → publi
 property detail. Check HTTP responses and staff cookie handling. Do not
 claim production lead capture is operational until this full path passes.
 
-**Known code caveat:** current Redis lead limiter keys on the Go socket peer;
-when all browser requests are forwarded by one Next.js/HTTPS proxy, distinct
-visitors can share the same 6-requests/minute bucket. This needs a
-trusted-client-IP design and load testing before full public launch.
+**Per-visitor rate limiting:** the Redis limiter keys on the socket peer
+unless the request carries the shared relay secret. Generate one value
+(`openssl rand -hex 32`) and set it as `TRUSTED_PROXY_SECRET` in
+`.env.production` and as the server-only Netlify variable
+`BACKEND_PROXY_SECRET`. The Next.js relay then sends Netlify's
+`x-nf-client-connection-ip`, so each visitor gets their own
+6-requests/minute bucket. `X-Forwarded-For` is never trusted.
 Also verify Netlify Forms fallback and CRM do not duplicate alerts.
 
 ## 6. Still separate from this deployment

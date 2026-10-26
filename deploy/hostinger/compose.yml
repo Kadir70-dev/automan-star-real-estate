@@ -44,6 +44,7 @@ services:
       ADMIN_API_KEY: "${ADMIN_API_KEY:?Set ADMIN_API_KEY}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:?Set strict HTTPS allowed origins}"
       MEDIA_DIR: /app/media
+      TRUSTED_PROXY_SECRET: "${TRUSTED_PROXY_SECRET:-}"
     ports:
       - "127.0.0.1:${AUTOMAN_API_LOOPBACK_PORT:-18080}:8080"
     volumes:

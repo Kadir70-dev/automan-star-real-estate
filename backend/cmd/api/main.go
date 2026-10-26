@@ -47,7 +47,7 @@ func main() {
 		logger.Error("redis unavailable", "error", err)
 		os.Exit(1)
 	}
-	server := &http.Server{Addr: ":" + cfg.Port, Handler: (httpapi.API{DB: pg, Redis: rd, AdminKey: cfg.AdminKey, AllowedOrigins: cfg.AllowedOrigins}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second, WriteTimeout: 15 * time.Second}
+	server := &http.Server{Addr: ":" + cfg.Port, Handler: (httpapi.API{DB: pg, Redis: rd, AdminKey: cfg.AdminKey, AllowedOrigins: cfg.AllowedOrigins, ProxySecret: cfg.ProxySecret}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second, WriteTimeout: 15 * time.Second}
 	go func() {
 		logger.Info("api listening", "port", cfg.Port)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
