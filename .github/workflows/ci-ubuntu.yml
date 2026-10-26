@@ -38,6 +38,13 @@ jobs:
       - name: Next.js production build
         working-directory: frontend
         run: npm run build
+      # On the VPS a clean git clone has no backend/go.sum. The Go test
+      # step above generates it, accidentally masking a clean Docker build bug.
+      - name: Clean-clone Docker build regression (no go.sum)
+        run: |
+          git restore -- backend/go.mod
+          rm -f backend/go.sum
+          docker build -f backend/Dockerfile -t automan-backend-clean-checkout:ci backend
       - name: Hostinger production compose configuration is isolated
         env:
           POSTGRES_PASSWORD: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
