@@ -22,7 +22,7 @@ export default function ConsultationPopup(){
 
  // Auto-open once per browser session, 2s after landing. Never on staff dashboard pages.
  useEffect(()=>{
-  if(shown.current||pathname?.startsWith('/dashboard'))return;
+  if(shown.current||(pathname?.startsWith('/dashboard')||pathname?.startsWith('/cms')))return;
   try{if(sessionStorage.getItem(SEEN_KEY))return}catch{/* storage blocked: fall back to once per page load */}
   const t=window.setTimeout(()=>{
    shown.current=true;
