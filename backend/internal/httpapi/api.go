@@ -88,6 +88,11 @@ func (a API) Handler() http.Handler {
 		}
 		respond(w, 200, map[string]any{"data": items, "count": len(items)})
 	})
+	mux.HandleFunc("GET /api/v1/cms/public/pages/{key}", a.cmsPublicPage)
+	mux.HandleFunc("GET /api/v1/cms/admin/pages", a.requireRole("admin")(a.cmsList))
+	mux.HandleFunc("GET /api/v1/cms/admin/pages/{key}", a.requireRole("admin")(a.cmsRead))
+	mux.HandleFunc("PUT /api/v1/cms/admin/pages/{key}/draft", a.requireRole("admin")(a.cmsDraft))
+	mux.HandleFunc("POST /api/v1/cms/admin/pages/{key}/publish", a.requireRole("admin")(a.cmsPublish))
 	mux.HandleFunc("GET /api/v1/properties/{slug}", a.publicPropertyDetail)
 	mux.HandleFunc("POST /api/v1/staff/login", a.login)
 	mux.HandleFunc("POST /api/v1/staff/logout", a.logout)
