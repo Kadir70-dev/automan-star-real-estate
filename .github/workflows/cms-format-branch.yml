@@ -1,0 +1,25 @@
+name: Format CMS image support (feature branch only)
+on:
+  push:
+    branches: [feat/cms-foundation-admin-20261026]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/cms-foundation-admin-20261026
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - run: |
+          gofmt -w backend/internal/httpapi/cms_media.go
+          if ! git diff --quiet -- backend/internal/httpapi/cms_media.go; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add backend/internal/httpapi/cms_media.go
+            git commit -m "style(cms): gofmt media backend"
+            git push origin HEAD:feat/cms-foundation-admin-20261026
+          fi
