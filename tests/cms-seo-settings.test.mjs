@@ -11,7 +11,7 @@ test('business metadata and structured data use CMS overrides',()=>{
  assert.match(layout,/export async function generateMetadata/);
 });
 test('image cropping is opt-in and preserves original by default',()=>{
- const admin=file('app/admin/page.tsx');
+ const admin=file('components/admin/MediaManager.tsx');
  assert.match(admin,/useState<'original'\|'wide'\|'square'>\('original'\)/);
  assert.match(admin,/canvas\.toBlob/);
  assert.match(admin,/Image upload mode/);
