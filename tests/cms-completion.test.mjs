@@ -20,7 +20,7 @@ test('CMS permits page editing with published document fallback',()=>{
  assert.match(source('app/privacy/page.tsx'),/getCms\('privacy'\)/);
 });
 test('properties listing intro uses a single CMS document fetch',()=>{
- const page=source('app/properties/page.tsx');
+ const page=source('app/properties/(listing)/page.tsx');
  assert.match(page,/getLiveProperties\(\),searchParams,getCms\('properties'\)/);
  assert.doesNotMatch(page,/cmsText\(await getCms/);
 });

@@ -8,6 +8,9 @@ async function forward(req:NextRequest,ctx:Ctx){
  if(!['GET','HEAD'].includes(req.method)){
   if(!isSameOrigin(req))return NextResponse.json({error:'Cross-origin request blocked'},{status:403});
  }
+ // Signed-out probe for public pages (e.g. the inline CMS editor): answers 200 with
+ // staff:null instead of a 401 so visitors' consoles stay clean. /me is unchanged.
+ if(path.length===1&&path[0]==='session'&&req.method==='GET')return sessionProbe(req);
  const uuid=/^[a-f0-9-]{36}$/i;
  const allowed=(path.length===1&&['login','logout','me','properties','leads','visits'].includes(path[0])) ||
  (path[0]==='properties'&&path.length>=2&&uuid.test(path[1])&&(
@@ -26,6 +29,16 @@ async function forward(req:NextRequest,ctx:Ctx){
   const cookie=response.headers.get('set-cookie');if(cookie){const value=cookie.match(/automan_staff=([^;]*)/)?.[1]||'';out.cookies.set('automan_staff',value,{httpOnly:true,sameSite:'strict',secure:process.env.NODE_ENV==='production',path:'/',maxAge:path[0]==='logout'?0:43200});}
   return out;
  }catch{return NextResponse.json({error:'Backend unavailable'},{status:503})}
+}
+async function sessionProbe(req:NextRequest){
+ const signedOut=()=>NextResponse.json({staff:null},{headers:{'Cache-Control':'no-store'}});
+ const base=process.env.BACKEND_INTERNAL_URL;
+ if(!base||!req.cookies.get('automan_staff')?.value)return signedOut();
+ try{
+  const response=await fetch(`${base}/api/v1/staff/me`,{headers:{Cookie:req.headers.get('cookie')||''},cache:'no-store',signal:AbortSignal.timeout(8000)});
+  if(!response.ok)return signedOut();
+  return NextResponse.json(await response.json(),{headers:{'Cache-Control':'no-store'}});
+ }catch{return signedOut()}
 }
 export async function GET(r:NextRequest,c:Ctx){return forward(r,c)}
 export async function POST(r:NextRequest,c:Ctx){return forward(r,c)}

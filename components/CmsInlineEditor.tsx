@@ -14,7 +14,7 @@ export default function CmsInlineEditor(){
  const[admin,setAdmin]=useState(false),[enabled,setEnabled]=useState(false),[page,setPage]=useState<Page|null>(null),[doc,setDoc]=useState<CmsDocument|null>(null),[edit,setEdit]=useState<Editing|null>(null),[busy,setBusy]=useState(false),[note,setNote]=useState('');
  useEffect(()=>{let live=true;setAdmin(false);setEnabled(false);setPage(null);setDoc(null);setEdit(null);
   if(!config)return;
-  fetch('/api/staff/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(live)setAdmin(j?.staff?.role==='admin')}).catch(()=>{});
+  fetch('/api/staff/session',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(live)setAdmin(j?.staff?.role==='admin')}).catch(()=>{});
   return()=>{live=false}
  },[path,config?.slug]);
  useEffect(()=>{

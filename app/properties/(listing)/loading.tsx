@@ -1,1 +1,3 @@
+// Scoped to the listing via the (listing) route group: a loading boundary above
+// [slug] would stream a 200 shell before notFound() could set a 404 status.
 export default function Loading(){return <main className="page-shell container final-skeleton-page" role="status" aria-label="Loading content"><div className="final-skeleton-heading"/><div className="final-skeleton-grid">{[1,2,3].map(i=><div key={i} className="final-skeleton-card"/>)}</div><span className="sr-only">Loading content…</span></main>}
