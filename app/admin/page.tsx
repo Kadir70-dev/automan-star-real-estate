@@ -31,12 +31,16 @@ export default function AdminStudio(){
  useEffect(()=>{let on=true;(async()=>{try{const r=await fetch('/api/staff/session',{cache:'no-store'});if(r.ok&&on)setStaff((await r.json()).staff??null)}catch{}finally{if(on)setLoaded(true)}})();return()=>{on=false}},[]);
 
  const loadPage=useCallback(async(p:string)=>{
-  const result=await readJSON(await fetch('/api/cms/admin/'+p,{cache:'no-store'})) as PageResponse;
-  setPage(result);setDraft(result.draft);setVersions([]);
   const path=STUDIO_SECTIONS.find(s=>s.page===p)!.path;
-  fetch(path,{cache:'no-store'}).then(r=>r.ok?r.text():'').then(html=>setLive(html?readLiveValues(html):{})).catch(()=>setLive({}));
-  const v=await fetch('/api/cms/admin/'+p+'/versions',{cache:'no-store'});
-  if(v.ok)setVersions(((await v.json()) as {data:Version[]}).data);
+  // Live copy must be in place before the canvas shows, or blank fields could be typed over.
+  const livePromise=fetch(path,{cache:'no-store',signal:AbortSignal.timeout(8000)}).then(r=>r.ok?r.text():'').then(html=>html?readLiveValues(html):{}).catch(()=>({}));
+  const[result,liveValues,v]=await Promise.all([
+   fetch('/api/cms/admin/'+p,{cache:'no-store'}).then(readJSON) as Promise<PageResponse>,
+   livePromise,
+   fetch('/api/cms/admin/'+p+'/versions',{cache:'no-store'}).catch(()=>null)
+  ]);
+  setLive(liveValues);setDraft(result.draft);setPage(result);
+  setVersions(v?.ok?((await v.json()) as {data:Version[]}).data:[]);
  },[]);
  useEffect(()=>{if(staff?.role!=='admin'||page?.slug===slug)return;setError('');void loadPage(slug).catch(e=>setError(e.message))},[slug,staff?.role,page?.slug,loadPage]);
 
