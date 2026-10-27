@@ -4,5 +4,6 @@
 # Requires DNS A/AAAA for api.amsrealty.tech -> this VPS and owner approval.
 api.amsrealty.tech {
   encode gzip
+  header Strict-Transport-Security "max-age=31536000"
   reverse_proxy 127.0.0.1:18080
 }

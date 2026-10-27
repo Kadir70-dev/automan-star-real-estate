@@ -56,7 +56,7 @@ test('public service pages provide route-specific metadata',()=>{
   ['app/commercial/page.tsx','/commercial'],
   ['app/about/page.tsx','/about'],
   ['app/contact/page.tsx','/contact'],
-  ['app/properties/page.tsx','/properties'],
+  ['app/properties/(listing)/page.tsx','/properties'],
   ['app/privacy/page.tsx','/privacy'],
  ]){
   const content=source(page);

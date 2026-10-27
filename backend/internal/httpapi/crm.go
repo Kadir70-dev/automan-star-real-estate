@@ -117,8 +117,19 @@ func (a API) createLead(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 	defer cancel()
-	var id string
-	err := a.DB.QueryRow(ctx, `INSERT INTO leads(full_name,email,phone,message,property_label,property_id,source) VALUES ($1,NULLIF($2,''),NULLIF($3,''),$4,$5,NULLIF($6,'')::uuid,'website') RETURNING id::text`, v.Name, v.Email, v.Phone, v.Message, v.Property, v.PropertyID).Scan(&id)
+	tx, err := a.DB.Begin(ctx)
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "unable to save enquiry"})
+		return
+	}
+	defer tx.Rollback(ctx)
+	id, dup, err := lockAndFindDuplicate(ctx, tx, v, "website")
+	if err == nil && !dup {
+		err = tx.QueryRow(ctx, `INSERT INTO leads(full_name,email,phone,message,property_label,property_id,source) VALUES ($1,NULLIF($2,''),NULLIF($3,''),$4,$5,NULLIF($6,'')::uuid,'website') RETURNING id::text`, v.Name, v.Email, v.Phone, v.Message, v.Property, v.PropertyID).Scan(&id)
+	}
+	if err == nil {
+		err = tx.Commit(ctx)
+	}
 	if err != nil {
 		respond(w, 503, map[string]string{"error": "unable to save enquiry"})
 		return
@@ -165,6 +176,23 @@ func (a API) createVisit(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(ctx)
 	var leadID, visitID string
+	leadID, dup, err := lockAndFindDuplicate(ctx, tx, v.leadInput, "site_visit")
+	if err == nil && dup {
+		err = tx.QueryRow(ctx, `SELECT id::text FROM site_visits WHERE lead_id=$1 AND requested_at=$2 LIMIT 1`, leadID, requested).Scan(&visitID)
+		if err == nil {
+			respond(w, 201, map[string]string{"id": visitID, "lead_id": leadID, "status": "requested", "message": "Your viewing request has been received, but is not yet confirmed."})
+			return
+		}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			respond(w, 503, map[string]string{"error": "could not save viewing request"})
+			return
+		}
+		err = nil
+	}
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "could not save viewing request"})
+		return
+	}
 	err = tx.QueryRow(ctx, `INSERT INTO leads(full_name,email,phone,message,property_label,property_id,source) VALUES ($1,NULLIF($2,''),NULLIF($3,''),$4,$5,NULLIF($6,'')::uuid,'site_visit') RETURNING id::text`, v.Name, v.Email, v.Phone, v.Message, v.Property, v.PropertyID).Scan(&leadID)
 	if err == nil {
 		err = tx.QueryRow(ctx, `INSERT INTO site_visits(lead_id,property_id,property_label,requested_at,requested_local_date,requested_local_time,status) VALUES ($1,NULLIF($2,'')::uuid,$3,$4,$5,$6,'requested') RETURNING id::text`, leadID, v.PropertyID, v.Property, requested, v.Date, v.Time).Scan(&visitID)
@@ -177,6 +205,27 @@ func (a API) createVisit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, 201, map[string]string{"id": visitID, "lead_id": leadID, "status": "requested", "message": "Your viewing request has been received, but is not yet confirmed."})
+}
+
+// duplicateWindow absorbs double clicks and client retries of the same submission.
+const duplicateWindow = 2 * time.Minute
+
+// lockAndFindDuplicate serialises submissions from the same contact for the rest of the
+// transaction and returns the ID of an identical lead saved within duplicateWindow.
+func lockAndFindDuplicate(ctx context.Context, tx pgx.Tx, v leadInput, source string) (string, bool, error) {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, "automan:lead:"+v.Email+"|"+v.Phone); err != nil {
+		return "", false, err
+	}
+	var id string
+	err := tx.QueryRow(ctx, `SELECT id::text FROM leads WHERE source=$1 AND full_name=$2 AND COALESCE(email,'')=$3 AND COALESCE(phone,'')=$4 AND message=$5 AND property_label=$6 AND COALESCE(property_id::text,'')=$7 AND created_at > now() - make_interval(secs => $8) ORDER BY created_at DESC LIMIT 1`,
+		source, v.Name, v.Email, v.Phone, v.Message, v.Property, strings.ToLower(v.PropertyID), duplicateWindow.Seconds()).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", false, nil
+	}
+	if err != nil {
+		return "", false, err
+	}
+	return id, true, nil
 }
 func (a API) listLeads(w http.ResponseWriter, r *http.Request) {
 	if a.DB == nil {
