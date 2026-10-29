@@ -32,5 +32,9 @@ export async function generateMetadata():Promise<Metadata>{
   openGraph:{...baseMetadata.openGraph,siteName:name},
  };
 }
+// Runs before route markup is parsed, avoiding a flash of the foyer for return
+// visitors and users who request reduced motion. No user input enters this script.
+const doorBootstrap="(function(){var seen=false;try{seen=sessionStorage.getItem('automan-door-entrance-v1')==='1'}catch(e){};if(seen||window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-automan-door-skip','1')}})();";
+
 export const viewport:Viewport={themeColor:'#0f1b20',viewportFit:'cover'};
-export default async function RootLayout({children}:{children:React.ReactNode}){const site=await getCms('site');return <html lang="en-AE" className={`${serif.variable} ${sans.variable}`}><body><script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd(site.fields))}/><SiteChrome site={site}>{children}</SiteChrome></body></html>}
+export default async function RootLayout({children}:{children:React.ReactNode}){const site=await getCms('site');return <html lang="en-AE" suppressHydrationWarning className={`${serif.variable} ${sans.variable}`}><body><script dangerouslySetInnerHTML={{__html:doorBootstrap}}/><noscript><style>{".as-entrance{display:none!important}"}</style></noscript><script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd(site.fields))}/><SiteChrome site={site}>{children}</SiteChrome></body></html>}
