@@ -20,18 +20,36 @@ export default function ConsultationPopup(){
  const dialogRef=useRef<HTMLDivElement>(null),returnFocus=useRef<HTMLElement|null>(null),openedAt=useRef(0),sending=useRef(false),shown=useRef(false);
  const honeypot=useRef<HTMLInputElement>(null);
 
- // Auto-open once per browser session, 2s after landing. Never on staff dashboard pages.
+ // Auto-open once per session, but never overlap the homepage entrance.
  useEffect(()=>{
   if(shown.current||pathname?.startsWith('/dashboard'))return;
-  try{if(sessionStorage.getItem(SEEN_KEY))return}catch{/* storage blocked: fall back to once per page load */}
-  const t=window.setTimeout(()=>{
-   shown.current=true;
-   try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}
-   returnFocus.current=document.activeElement as HTMLElement|null;
-   openedAt.current=Date.now();
-   setPhase('open');
-  },OPEN_DELAY_MS);
-  return ()=>window.clearTimeout(t);
+  try{if(sessionStorage.getItem(SEEN_KEY))return}catch{/* private mode */}
+  let timer:number|undefined;
+  let observer:MutationObserver|undefined;
+  const schedule=()=>{
+   if(timer!==undefined||shown.current)return;
+   timer=window.setTimeout(()=>{
+    shown.current=true;
+    try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}
+    returnFocus.current=document.activeElement as HTMLElement|null;
+    openedAt.current=Date.now();
+    setPhase('open');
+   },OPEN_DELAY_MS);
+  };
+  const complete=()=>{observer?.disconnect();schedule();};
+  const wait=pathname==='/'&&!!document.querySelector('[data-automan-entrance]');
+  if(wait){
+   window.addEventListener('automan:entrance-finished',complete,{once:true});
+   observer=new MutationObserver(()=>{
+    if(!document.querySelector('[data-automan-entrance]'))complete();
+   });
+   observer.observe(document.body,{childList:true,subtree:true});
+  }else schedule();
+  return ()=>{
+   window.removeEventListener('automan:entrance-finished',complete);
+   observer?.disconnect();
+   if(timer!==undefined)window.clearTimeout(timer);
+  };
  },[pathname]);
 
  const close=useCallback(()=>{
