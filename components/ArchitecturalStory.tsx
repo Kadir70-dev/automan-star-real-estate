@@ -59,8 +59,14 @@ export default function ArchitecturalStory({cms}:{cms?:CmsDocument}={}) {
     // The visitor may have scrolled before hydration attached the listeners.
     if (window.scrollY > 0) { setEngaged(true); return; }
     const events = ['scroll', 'wheel', 'pointerdown', 'keydown', 'touchstart'] as const;
-    const go = () => setEngaged(true);
-    events.forEach((e) => window.addEventListener(e, go, { passive: true, once: true }));
+    // The entrance's Enter/Skip/Tab/Escape events are not an invitation to start
+    // WebGL. Compiling the 3D tower while the CSS door opens stalls its frames.
+    // Do not use once:true: it would consume a guarded entrance interaction.
+    const go = () => {
+      if (document.querySelector('[data-automan-entrance]')) return;
+      setEngaged(true);
+    };
+    events.forEach((e) => window.addEventListener(e, go, { passive: true }));
     return () => events.forEach((e) => window.removeEventListener(e, go));
   }, [mode, engaged]);
 
