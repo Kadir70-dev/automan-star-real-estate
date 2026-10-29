@@ -14,6 +14,7 @@ on:
       - 'tsconfig.json'
       - 'eslint.config.*'
       - 'netlify.toml'
+      - 'scripts/seo-http-qa.sh'
       - '.github/workflows/live-root-ci.yml'
   push:
     branches: [main]
@@ -29,6 +30,7 @@ on:
       - 'tsconfig.json'
       - 'eslint.config.*'
       - 'netlify.toml'
+      - 'scripts/seo-http-qa.sh'
       - '.github/workflows/live-root-ci.yml'
   workflow_dispatch:
 
@@ -72,3 +74,20 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: SSR and SEO HTTP smoke checks
+        run: |
+          set -euo pipefail
+          npx next start -p 3777 > /tmp/automan-next-smoke.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true; cat /tmp/automan-next-smoke.log' EXIT
+          ready=0
+          for i in $(seq 1 45); do
+            if curl --silent --fail --max-time 2 http://127.0.0.1:3777/ > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" != "1" ]; then
+            echo "Next.js server did not become ready" >&2
+            exit 1
+          fi
+          bash scripts/seo-http-qa.sh http://127.0.0.1:3777
