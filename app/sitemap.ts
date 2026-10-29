@@ -16,6 +16,17 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const pages=indexable.filter((p):p is NonNullable<typeof p>=>p!==null);
  // Published listings from the property API; absent when the API is offline.
  const {data}=await getLiveProperties();
- const listings=data.filter(p=>p.slug&&p.listing_type!=='rent').map(p=>({url:`${SITE_URL}/properties/${encodeURIComponent(p.slug)}`,changeFrequency:'weekly' as const,priority:0.6}));
+ // Only link to detail pages which meet the same completeness requirements
+ // used by /properties/[slug]/generateMetadata. Incomplete records are noindex
+ // and must not be offered to search engines as indexable URLs.
+ const seen=new Set<string>();
+ const listings=data.flatMap(p=>{
+  const slug=p.slug?.trim();
+  if(!slug||!p.title?.trim()||!p.community?.trim()||!p.emirate?.trim()||p.listing_type?.toLowerCase()==='rent')return [];
+  const url=`${SITE_URL}/properties/${encodeURIComponent(slug)}`;
+  if(seen.has(url))return [];
+  seen.add(url);
+  return [{url,changeFrequency:'weekly' as const,priority:0.6}];
+ });
  return [...pages,...listings];
 }
