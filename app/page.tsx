@@ -3,10 +3,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ArchitecturalStory from '@/components/ArchitecturalStory';
 import Hero from '@/components/Hero';
+import EntranceDoor from '@/components/EntranceDoor';
 import PropertyCard from '@/components/PropertyCard';
 import {communities,properties} from '@/lib/data';
 import {LEADERSHIP} from '@/lib/leadership';
 import './home.css';
+import './entrance-door.css';
 import type {Metadata} from 'next';
 import {pageMetadata} from '@/lib/seo';
 
@@ -24,6 +26,7 @@ const services=[
 ];
 
 export default async function Home(){const cms=await getCms("home");return <main className="home">
+ <EntranceDoor/>
  <Hero cms={cms}/>
  <ArchitecturalStory cms={cms}/>
 
