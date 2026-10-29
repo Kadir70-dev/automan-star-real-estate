@@ -14,7 +14,7 @@ test('entrance interactions cannot trigger the 3D scene preload',()=>{
  const listeners=story.slice(start,end);
  assert.match(listeners,/document\.querySelector\('\[data-automan-entrance\]'\)/);
  assert.match(listeners,/if\s*\(document\.querySelector\('\[data-automan-entrance\]'\)\)\s*return/);
- assert.doesNotMatch(listeners,/once\s*:\s*true/,'guarded events must not consume one-time listener');
+ assert.match(listeners,/addEventListener\(e,\s*go,\s*\{\s*passive:\s*true\s*\}\)/,'guarded events must not use once:true');
 });
 
 test('return visits and reduced motion hide the foyer before hydration',()=>{
