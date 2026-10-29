@@ -1,4 +1,7 @@
 /* Original CSS-3D entrance; homepage only and no external assets */
+/* Session/bootstrap state is set before React hydration, so no returning-user flash. */
+html[data-automan-door-skip="1"] .as-entrance{display:none!important}
+
 .as-entrance{position:fixed;inset:0;z-index:3000;isolation:isolate;overflow:hidden;color:#f7f1e7;background:#0c1418;font-family:var(--sans),system-ui,sans-serif;opacity:1;transition:opacity .6s ease;overscroll-behavior:contain}
 .as-entrance--leaving{opacity:0;pointer-events:none}
 .as-entrance *{box-sizing:border-box}
@@ -28,6 +31,9 @@
 .as-entrance--opening .as-entrance-door--left,.as-entrance--leaving .as-entrance-door--left{transform:rotateY(-105deg)}
 .as-entrance--opening .as-entrance-door--right,.as-entrance--leaving .as-entrance-door--right{transform:rotateY(105deg)}
 .as-entrance-door-inlay{position:absolute;inset:16% 21%;border-block:1px solid rgba(198,168,120,.3);background:linear-gradient(100deg,transparent,rgba(198,168,120,.08) 60%,transparent)}
+/* Subtle metallic reflection, confined to door surface and inexpensive to render. */
+.as-entrance-door-inlay:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 12%,rgba(242,213,159,.12) 46%,transparent 70%);opacity:.7;transform:translateX(-15%);transition:transform 1.8s cubic-bezier(.2,.7,.2,1),opacity 1.2s ease}
+.as-entrance--opening .as-entrance-door-inlay:after,.as-entrance--leaving .as-entrance-door-inlay:after{transform:translateX(24%);opacity:1}
 .as-entrance-handle{position:absolute;top:52%;right:8%;width:4px;height:40px;border-radius:4px;background:linear-gradient(90deg,#816c4e,#f3d99e,#a5855d);box-shadow:0 0 8px rgba(198,168,120,.28)}
 .as-entrance-door--right .as-entrance-handle{left:8%;right:auto}
 .as-entrance-walllight{position:absolute;top:36%;width:4px;height:25%;border-radius:9px;background:linear-gradient(#a98b62,#e6c98f 50%,#a98b62);box-shadow:0 0 14px rgba(227,191,129,.52),0 0 60px rgba(198,168,120,.14);animation:as-light-breathe 4s ease-in-out infinite alternate}
@@ -37,7 +43,9 @@
 .as-entrance-brand{display:flex;align-items:center;gap:14px;font:600 12px/1.2 var(--sans),sans-serif;letter-spacing:.2em;color:#eee6d7;text-align:left;text-shadow:0 2px 15px #060c10}
 .as-entrance-brand small{display:block;margin-top:7px;letter-spacing:.27em;font-size:9px;color:#d5c1a2}
 .as-entrance-brand-mark{font:400 40px/1 var(--serif),Georgia,serif;position:relative}.as-entrance-brand-mark span{font:14px/1 var(--sans);color:var(--sand);position:absolute;top:-1px;right:-12px}
-.as-entrance-message{display:flex;flex-direction:column;align-items:center;margin:auto 0 6vh;max-width:min(710px,100%);text-shadow:0 2px 20px #050b0e}
+.as-entrance-message{display:flex;flex-direction:column;align-items:center;margin:auto 0 6vh;max-width:min(710px,100%);text-shadow:0 2px 20px #050b0e;opacity:1;transform:translateY(0);transition:opacity .46s ease,transform .65s cubic-bezier(.22,.7,.2,1)}
+/* Clear sightline as the doors begin to move; Skip remains available. */
+.as-entrance--walking .as-entrance-message,.as-entrance--opening .as-entrance-message,.as-entrance--leaving .as-entrance-message{opacity:0;transform:translateY(-22px);pointer-events:none}
 .as-entrance-eyebrow{font:600 10px/1.5 var(--sans),sans-serif;letter-spacing:.37em;color:#e8c999;margin:0 0 18px}
 .as-entrance-message h2{margin:0;font:400 clamp(35px,5.1vw,74px)/1.04 var(--serif),Georgia,serif;letter-spacing:-.025em}
 .as-entrance-message h2 em{font-weight:400;font-style:italic;color:#e5c796}
