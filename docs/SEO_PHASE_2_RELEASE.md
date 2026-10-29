@@ -20,6 +20,31 @@ Existing titles/descriptions, canonical URL, OG/Twitter tags, JSON-LD (RealEstat
 6. Verify page source has one self-referencing canonical URL and route-specific title and description, and that `/admin` and demo/account pages remain `noindex`.
 7. Recheck the door entrance, consultation popup and contact forms after Netlify publish. Preserve the rollback deploy ID.
 
+## Netlify preview procedure (never deploy this candidate with --prod)
+
+In an isolated clone or disposable worktree, select this PR's **exact head SHA**
+and confirm it with `git rev-parse HEAD`. Do not reuse a stale Next.js build.
+
+```bash
+git fetch origin seo/phase-2-netlify-routing-sitemap
+git switch --detach origin/seo/phase-2-netlify-routing-sitemap
+npm ci --no-audit --no-fund
+npx netlify-cli link --id 1e689764-3603-400b-bbe1-041ac2dcf8c0
+npx netlify-cli status
+# No --prod: creates a preview/draft deploy against the linked project.
+npx netlify-cli deploy --context production --message "SEO PR14 preview QA"
+```
+
+Copy the **Draft URL** from the deploy output. Verify that it belongs to
+the existing `automan-star-real-estate` Netlify project and run:
+`bash scripts/seo-http-qa.sh https://EXACT-DRAFT-URL`.
+
+Make sure that the preview is on the Netlify Next.js Runtime, not a plain
+`next start` server: the custom `netlify.toml` routing change needs this
+Netlify-specific validation. Verify the URLs and screenshot of the main hero
+manually as well. Retain the release's current production deployment ID for
+rollback. Do not deploy to production until all tests pass.
+
 ## Post-release Google Search Console
 
 - Verify a Domain property for `automanstarrealty.com` with domain-owner approval. Do not change DNS without approval.
