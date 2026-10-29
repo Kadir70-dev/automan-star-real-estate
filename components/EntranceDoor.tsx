@@ -11,7 +11,7 @@ export default function EntranceDoor(){
  const enterRef=useRef<HTMLButtonElement>(null);
  const skipRef=useRef<HTMLButtonElement>(null);
  const previousFocus=useRef<HTMLElement|null>(null);
- const clearTimers=useCallback(()=>{timers.current.forEach(window.clearTimeout);timers.current=[];},[]);
+ const clearTimers=useCallback(()=>{timers.current.forEach(id=>window.clearTimeout(id));timers.current=[];},[]);
  const finish=useCallback(()=>{
   clearTimers();
   try{sessionStorage.setItem(SEEN_KEY,'1')}catch{/* private mode */}
