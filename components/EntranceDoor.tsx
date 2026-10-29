@@ -10,11 +10,14 @@ export default function EntranceDoor(){
  const timers=useRef<number[]>([]);
  const enterRef=useRef<HTMLButtonElement>(null);
  const skipRef=useRef<HTMLButtonElement>(null);
+ const overlayRef=useRef<HTMLDivElement>(null);
  const previousFocus=useRef<HTMLElement|null>(null);
  const clearTimers=useCallback(()=>{timers.current.forEach(id=>window.clearTimeout(id));timers.current=[];},[]);
  const finish=useCallback(()=>{
   clearTimers();
   try{sessionStorage.setItem(SEEN_KEY,'1')}catch{/* private mode */}
+  // Keeps the overlay invisible on client-side return navigation, before effects run.
+  document.documentElement.setAttribute('data-automan-door-skip','1');
   setPhase('gone');
   window.dispatchEvent(new Event('automan:entrance-finished'));
   const old=previousFocus.current;
@@ -41,6 +44,21 @@ export default function EntranceDoor(){
   if(!active)return;
   const body=document.body,overflow=body.style.overflow;
   body.style.overflow='hidden';
+  // Inert the page behind this modal, including siblings in the route and site chrome.
+  // This stops screen readers and keyboard navigation from reaching hidden controls.
+  const inerted:Array<{el:HTMLElement;previous:boolean}>=[];
+  let current:HTMLElement|null=overlayRef.current;
+  while(current&&current!==body){
+   const parent:HTMLElement|null=current.parentElement;
+   if(!parent)break;
+   for(const child of Array.from(parent.children)){
+    if(child!==current&&child instanceof HTMLElement){
+     inerted.push({el:child,previous:child.inert});
+     child.inert=true;
+    }
+   }
+   current=parent;
+  }
   const onKey=(e:KeyboardEvent)=>{
    if(e.key==='Escape'){e.preventDefault();finish();return;}
    if(e.key!=='Tab')return;
@@ -51,10 +69,14 @@ export default function EntranceDoor(){
    else if(!e.shiftKey&&(document.activeElement===last||!buttons.includes(document.activeElement as HTMLButtonElement))){e.preventDefault();first.focus();}
   };
   document.addEventListener('keydown',onKey);
-  return ()=>{body.style.overflow=overflow;document.removeEventListener('keydown',onKey);};
+  return ()=>{
+   body.style.overflow=overflow;
+   inerted.forEach(({el,previous})=>{el.inert=previous;});
+   document.removeEventListener('keydown',onKey);
+  };
  },[active,finish]);
  if(phase==='gone')return null;
- return <div data-automan-entrance="" className={'as-entrance as-entrance--'+phase} role="dialog" aria-modal="true" aria-labelledby="as-entrance-title" aria-describedby="as-entrance-copy">
+ return <div ref={overlayRef} data-automan-entrance="" className={'as-entrance as-entrance--'+phase} role="dialog" aria-modal="true" aria-labelledby="as-entrance-title" aria-describedby="as-entrance-copy">
   <div className="as-entrance-ambient" aria-hidden="true"/>
   <div className="as-entrance-perspective" aria-hidden="true">
    <div className="as-entrance-scene">
