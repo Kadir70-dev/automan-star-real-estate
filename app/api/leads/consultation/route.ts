@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from 'next/server';
 import {isSameOrigin,publicOrigin} from '@/lib/same-origin';
 import {validateLead,type CleanLead} from '@/lib/consultation-lead';
 import {relayHeaders} from '@/lib/backend-relay';
+import {notifyEnquiryWhatsApp} from '@/lib/whatsapp-enquiry';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
@@ -12,6 +13,7 @@ export const dynamic='force-dynamic';
   - Existing Go CRM when BACKEND_INTERNAL_URL is set (POST /api/v1/leads)
  Notification (optional, server-side only):
   - Resend email when RESEND_API_KEY, LEAD_NOTIFY_TO and LEAD_NOTIFY_FROM are set
+  - WhatsApp staff alert when WhatsApp Business Cloud API and an approved template are configured
  No personal data is ever logged.
 */
 
@@ -93,7 +95,16 @@ export async function POST(req:NextRequest){
   return json({error:'We could not submit your request right now. Please try again shortly or email saud@automanstarrealty.com.'},503);
  }
 
- let notified=false;
- try{notified=Boolean(await sendEmail(lead))}catch(e){console.error('[consultation] notification failed:',(e as Error).message)}
- return json({ok:true,stored,notified},201);
+ // Notifications are best-effort only after storage confirmation. They never
+ // turn a successfully recorded lead into a user-facing submission failure.
+ const [emailNotice,whatsappNotice]=await Promise.allSettled([
+  sendEmail(lead),
+  notifyEnquiryWhatsApp({name:lead.name,email:lead.email,phone:lead.phoneE164,
+   topic:lead.interest,note:'Consultation popup'}),
+ ]);
+ if(emailNotice.status==='rejected')console.error('[consultation] email notification failed');
+ if(whatsappNotice.status==='rejected')console.error('[consultation] WhatsApp notification failed');
+ const emailed=emailNotice.status==='fulfilled'&&Boolean(emailNotice.value);
+ const whatsappNotified=whatsappNotice.status==='fulfilled'&&Boolean(whatsappNotice.value);
+ return json({ok:true,stored,notified:emailed||whatsappNotified,whatsappNotified},201);
 }
