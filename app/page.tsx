@@ -12,6 +12,8 @@ import './entrance-door.css';
 import type {Metadata} from 'next';
 import {pageMetadata} from '@/lib/seo';
 
+const FOUNDER=LEADERSHIP[0];
+
 const baseMetadata:Metadata={
  ...pageMetadata({path:'/',title:'Automan Star Real Estate',description:'Dubai real estate agency in Business Bay. Automan Star Real Estate helps you buy apartments, villas, off-plan and commercial property in Dubai.',socialTitle:'Automan Star Real Estate | Dubai Real Estate Agency'}),
  title:{absolute:'Automan Star Real Estate | Dubai Real Estate Agency, Business Bay'},
@@ -61,13 +63,19 @@ export default async function Home(){const cms=await getCms("home");return <main
   </div>
  </section>
 
- <section className="home-team" aria-labelledby="team-title">
-  <div className="container home-team-grid">
-   <h2 id="team-title" data-cms-field="team.title">{cmsText(cms,'team.title','You will work directly with the partners.')}</h2>
-   <ul className="home-team-list">{LEADERSHIP.map((l,i)=><li key={l.name}><span className="home-team-mark" aria-hidden="true">{l.initials}</span><span><strong data-cms-field={`leadership.${i}.name`}>{cmsText(cms,`leadership.${i}.name`,l.name)}</strong><small data-cms-field={`leadership.${i}.role`}>{cmsText(cms,`leadership.${i}.role`,l.role)}</small></span></li>)}</ul>
-   <div className="home-team-office">
-    <p data-cms-field="team.office">{cmsText(cms,'team.office','Office 2401, The Prism Tower, Business Bay, Dubai')}</p>
-    <a className="ds-link" href="https://maps.google.com/?q=The+Prism+Tower+Business+Bay+Dubai" target="_blank" rel="noopener noreferrer">Open in Maps</a>
+ <section className="home-founder" aria-labelledby="founder-name">
+  <div className="container home-founder-grid">
+   <figure className="founder-portrait">
+    <div className="founder-frame">
+     {(()=>{const src=cmsText(cms,'team.image','/saud.jpeg');return <Image data-cms-image="team.image" src={src} unoptimized={src!=='/saud.jpeg'} fill alt={cmsText(cms,'team.alt','Saud Kondekar, Founder and CEO of Automan Star Real Estate, in his Business Bay office')} sizes="(max-width: 800px) 100vw, 42vw"/>})()}
+    </div>
+   </figure>
+   <div className="founder-copy">
+    <span className="founder-monogram" aria-hidden="true">{FOUNDER.initials}</span>
+    <h2 id="founder-name" data-cms-field="leadership.0.name">{cmsText(cms,'leadership.0.name',FOUNDER.name)}</h2>
+    <span className="founder-rule" aria-hidden="true"/>
+    <p className="founder-role" data-cms-field="leadership.0.role">{cmsText(cms,'leadership.0.role',FOUNDER.role)}</p>
+    <Link href="/contact" className="ds-btn ds-btn-line founder-cta" data-cms-field="team.cta">{cmsText(cms,'team.cta','Speak with Saud')}</Link>
    </div>
   </div>
  </section>

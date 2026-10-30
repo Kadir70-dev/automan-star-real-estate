@@ -11,7 +11,7 @@ test('the production staff routes never render PhaseOneAdmin demo data',()=>{
 });
 test('CMS permits page editing with published document fallback',()=>{
  const schema=source('lib/cms-schema.ts');
- for(const key of ['hero.image2','hero.image3','tour.title','team.office','business.address','social.linkedin','privacy.collection.copy','page.heading']){
+ for(const key of ['hero.image2','hero.image3','tour.title','team.image','business.address','social.linkedin','privacy.collection.copy','page.heading']){
   if(key==='privacy.collection.copy')assert.match(schema,/privacy\.'\+key\+'\.copy/);
   else assert.ok(schema.includes(key),key+' field should exist');
  }
