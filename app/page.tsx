@@ -67,7 +67,7 @@ export default async function Home(){const cms=await getCms("home");return <main
   <div className="container home-founder-grid">
    <figure className="founder-portrait">
     <div className="founder-frame">
-     {(()=>{const src=cmsText(cms,'team.image','/saud.jpeg');return <Image data-cms-image="team.image" src={src} unoptimized={src!=='/saud.jpeg'} fill alt={cmsText(cms,'team.alt','Saud Kondekar, Founder and CEO of Automan Star Real Estate, in his Business Bay office')} sizes="(max-width: 800px) 100vw, 42vw"/>})()}
+     {(()=>{const src=cmsText(cms,'team.image','/saud.jpeg');return <Image data-cms-image="team.image" src={src} unoptimized fill alt={cmsText(cms,'team.alt','Saud Kondekar, Founder and CEO of Automan Star Real Estate, in his Business Bay office')} sizes="(max-width: 800px) 100vw, 42vw"/>})()}
     </div>
    </figure>
    <div className="founder-copy">
