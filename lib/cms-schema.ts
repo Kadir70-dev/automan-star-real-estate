@@ -15,8 +15,8 @@ const home:CmsField[]=[
  ...[['buy','Ready homes'],['offplan','Off-plan'],['commercial','Commercial']].flatMap(([key,label])=>[field('services.'+key+'.title',label+' title'),field('services.'+key+'.copy',label+' description','textarea')]),
  field('areas.title','Communities heading'),
  ...['Downtown Dubai','Dubai Marina','Palm Jumeirah'].flatMap((name,i)=>[field('areas.'+i+'.title',name+' display name'),field('areas.'+i+'.image',name+' image','image'),field('areas.'+i+'.alt',name+' image description')]),
- field('team.title','Leadership heading'),field('team.office','Team office address','textarea'),
- ...[0,1].flatMap(i=>[field('leadership.'+i+'.name','Leader '+(i+1)+' name'),field('leadership.'+i+'.role','Leader '+(i+1)+' role')]),
+ field('team.image','Founder portrait','image'),field('team.alt','Founder portrait description'),
+ field('leadership.0.name','Founder name'),field('leadership.0.role','Founder role'),field('team.cta','Founder button'),
  field('tour.title','3D tour heading'),field('tour.description','3D tour description','textarea'),field('tour.cta','3D tour button')
 ];
 const guideFields:CmsField[]=[
