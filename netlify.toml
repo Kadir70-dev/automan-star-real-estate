@@ -2,6 +2,14 @@
   command = "npm run build"
   publish = ".next"
 
+# Send the default Netlify hostname to the real domain (path + query preserved).
+# Host-specific, so the custom domain, www and deploy previews are unaffected.
+[[redirects]]
+  from = "https://automan-star-real-estate.netlify.app/*"
+  to = "https://automanstarrealty.com/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
