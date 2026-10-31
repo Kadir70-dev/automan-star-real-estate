@@ -1,0 +1,52 @@
+name: Domain TLS diagnostic (read only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/domain-tls-diagnostics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  domain-tls:
+    name: Public DNS, TLS and Netlify health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect public DNS without secrets
+        shell: bash
+        run: |
+          for domain in automanstarrealty.com www.automanstarrealty.com automan-star-real-estate.netlify.app; do
+            echo "::group::DNS $domain"
+            for type in A AAAA NS CAA; do
+              echo "--- $type ---"
+              dig +time=3 +tries=1 +short "$domain" "$type" || true
+            done
+            echo "--- A via 1.1.1.1 ---"
+            dig +time=3 +tries=1 +short @1.1.1.1 "$domain" A || true
+            echo "--- A via 8.8.8.8 ---"
+            dig +time=3 +tries=1 +short @8.8.8.8 "$domain" A || true
+            echo "::endgroup::"
+          done
+      - name: Check HTTPS TLS handshakes and HTTP response
+        shell: bash
+        run: |
+          for domain in automanstarrealty.com www.automanstarrealty.com automan-star-real-estate.netlify.app; do
+            echo "::group::HTTPS $domain"
+            curl --noproxy '*' -ILsS --max-time 15 -o /dev/null -w 'HTTPS HTTP=%{http_code} remote_ip=%{remote_ip} sslverify=%{ssl_verify_result} err=%{errormsg}\n' "https://$domain/" || true
+            echo "--- HTTPS with cert validation disabled (TLS still required) ---"
+            curl --noproxy '*' -kILsS --max-time 15 -o /dev/null -w 'HTTPS -k HTTP=%{http_code} remote_ip=%{remote_ip} err=%{errormsg}\n' "https://$domain/" || true
+            echo "--- TLS certificate summary ---"
+            timeout 12 bash -c 'openssl s_client -connect "$1:443" -servername "$1" -showcerts < /dev/null 2>&1 | head -50' _ "$domain" || true
+            echo "::endgroup::"
+          done
+      - name: Check plain HTTP vs HTTPS redirects
+        shell: bash
+        run: |
+          for domain in automanstarrealty.com www.automanstarrealty.com automan-star-real-estate.netlify.app; do
+            echo "::group::HTTP $domain"
+            curl --noproxy '*' -IsS --max-time 15 -D - -o /dev/null "http://$domain/" | head -25 || true
+            echo "::endgroup::"
+          done
