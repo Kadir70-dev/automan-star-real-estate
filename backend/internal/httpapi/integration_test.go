@@ -154,7 +154,7 @@ func TestIntegrationRoleSeparation(t *testing.T) {
 	property := `{"slug":"qa-test-role-` + time.Now().Format("150405000000") + `","reference_code":"QA-` + time.Now().Format("150405000000") + `","title":"QA-TEST","description":"","emirate":"Dubai","community":"QA","category":"apartment","listing_type":"sale","construction_status":"ready","price_aed":1}`
 	for _, tc := range []struct {
 		who, cookie, method, path, body string
-		want                             int
+		want                            int
 	}{
 		{"agent", agent, "GET", "/api/v1/admin/leads", "", 200},
 		{"agent", agent, "GET", "/api/v1/cms/admin/pages/home", "", 403},
