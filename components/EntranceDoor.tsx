@@ -9,7 +9,6 @@ export default function EntranceDoor(){
  const [phase,setPhase]=useState<Phase>('ready');
  const timers=useRef<number[]>([]);
  const enterRef=useRef<HTMLButtonElement>(null);
- const skipRef=useRef<HTMLButtonElement>(null);
  const overlayRef=useRef<HTMLDivElement>(null);
  const previousFocus=useRef<HTMLElement|null>(null);
  const clearTimers=useCallback(()=>{timers.current.forEach(id=>window.clearTimeout(id));timers.current=[];},[]);
@@ -62,7 +61,7 @@ export default function EntranceDoor(){
   const onKey=(e:KeyboardEvent)=>{
    if(e.key==='Escape'){e.preventDefault();finish();return;}
    if(e.key!=='Tab')return;
-   const buttons=[enterRef.current,skipRef.current].filter((el):el is HTMLButtonElement=>!!el&&!el.disabled&&el.offsetParent!==null);
+   const buttons=[enterRef.current].filter((el):el is HTMLButtonElement=>!!el&&!el.disabled&&el.offsetParent!==null);
    if(!buttons.length)return;
    const first=buttons[0],last=buttons[buttons.length-1];
    if(e.shiftKey&&(document.activeElement===first||!buttons.includes(document.activeElement as HTMLButtonElement))){e.preventDefault();last.focus();}
@@ -76,7 +75,7 @@ export default function EntranceDoor(){
   };
  },[active,finish]);
  if(phase==='gone')return null;
- return <div ref={overlayRef} data-automan-entrance="" className={'as-entrance as-entrance--'+phase} role="dialog" aria-modal="true" aria-labelledby="as-entrance-title" aria-describedby="as-entrance-copy">
+ return <div ref={overlayRef} data-automan-entrance="" className={'as-entrance as-entrance--'+phase} role="dialog" aria-modal="true" aria-labelledby="as-entrance-title">
   <div className="as-entrance-ambient" aria-hidden="true"/>
   <div className="as-entrance-perspective" aria-hidden="true">
    <div className="as-entrance-scene">
@@ -98,15 +97,10 @@ export default function EntranceDoor(){
    </div>
   </div>
   <div className="as-entrance-ui">
-   <div className="as-entrance-brand" aria-hidden="true"><span className="as-entrance-brand-mark">A<span>✳</span></span><span>AUTOMAN STAR <small>REAL ESTATE · DUBAI</small></span></div>
    <div className="as-entrance-message">
-    <p className="as-entrance-eyebrow">AN INVITATION INSIDE</p>
-    <h2 id="as-entrance-title">A new perspective<br/><em>on Dubai living.</em></h2>
-    <p id="as-entrance-copy">Step inside a more considered property experience.</p>
-    <button type="button" className="as-entrance-enter" ref={enterRef} onClick={start} disabled={phase!=='ready'}><span>{phase==='ready'?'Enter the experience':'Entering…'}</span><span aria-hidden="true">↗</span></button>
+    <h2 id="as-entrance-title">AUTOMAN STAR REALTY</h2>
    </div>
-   <button type="button" ref={skipRef} className="as-entrance-skip" onClick={finish}>Skip introduction <span aria-hidden="true">→</span></button>
-   <span className="as-entrance-index" aria-hidden="true">01 / AUTOMAN STAR</span>
   </div>
+  <button type="button" className="as-entrance-trigger" ref={enterRef} onClick={start} aria-label="Enter Automan Star Realty" aria-disabled={phase!=='ready'}/>
  </div>;
 }
