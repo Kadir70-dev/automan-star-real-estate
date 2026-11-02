@@ -9,12 +9,24 @@ func TestPasswordHash(t *testing.T) {
 	}
 }
 func TestPropertyValidation(t *testing.T) {
-	v := propertyInput{Slug: "tower-a", Reference: "AUTO-001", Title: "Apartment with city view", Emirate: "Dubai", Community: "Marina", Category: "apartment", ListingType: "sale", ConstructionStatus: "ready", PriceAED: 1500000}
-	if !v.valid() {
-		t.Fatal("expected valid")
+	v := propertyInput{Slug: "tower-a", Reference: "AUTO-001", Title: "Apartment with city view", Emirate: "Dubai", Community: "Marina", Category: "apartment", ListingType: "sale", ConstructionStatus: "ready", PriceAED: 1500000, UnitMix: []string{" Villas ", ""}}
+	if msg := v.validate(); msg != "" {
+		t.Fatalf("expected valid, got %q", msg)
 	}
-	v.PriceAED = -1
-	if v.valid() {
-		t.Fatal("expected invalid")
+	if len(v.UnitMix) != 1 || v.UnitMix[0] != "Villas" {
+		t.Fatalf("unit mix not cleaned: %#v", v.UnitMix)
+	}
+	for name, mutate := range map[string]func(*propertyInput){
+		"negative price": func(p *propertyInput) { p.PriceAED = -1 },
+		"bad slug":       func(p *propertyInput) { p.Slug = "Tower A" },
+		"no community":   func(p *propertyInput) { p.Community = " " },
+		"bad category":   func(p *propertyInput) { p.Category = "castle" },
+		"long seo title": func(p *propertyInput) { p.SeoTitle = string(make([]byte, 121)) },
+	} {
+		c := v
+		mutate(&c)
+		if c.validate() == "" {
+			t.Fatalf("%s: expected invalid", name)
+		}
 	}
 }

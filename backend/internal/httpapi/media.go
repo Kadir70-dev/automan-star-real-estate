@@ -150,7 +150,7 @@ func (a API) uploadMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var mid string
-	err = a.DB.QueryRow(ctx, `INSERT INTO property_media(property_id,object_key,media_type,alt_text,sort_order) VALUES($1,$2,'image',$3,COALESCE((SELECT max(sort_order)+1 FROM property_media WHERE property_id=$1),0)) RETURNING id::text`, id, key, strings.TrimSpace(r.FormValue("alt_text"))).Scan(&mid)
+	err = a.DB.QueryRow(ctx, `INSERT INTO property_media(property_id,object_key,media_type,alt_text,sort_order,is_cover) VALUES($1,$2,'image',$3,COALESCE((SELECT max(sort_order)+1 FROM property_media WHERE property_id=$1),0),NOT EXISTS(SELECT 1 FROM property_media WHERE property_id=$1 AND is_cover)) RETURNING id::text`, id, key, strings.TrimSpace(r.FormValue("alt_text"))).Scan(&mid)
 	if err != nil {
 		discard(key)
 		respond(w, 503, map[string]string{"error": "media save failed"})
@@ -260,7 +260,8 @@ func (a API) deleteMedia(w http.ResponseWriter, r *http.Request) {
 	ctx, c := context.WithTimeout(r.Context(), 5*time.Second)
 	defer c()
 	var key string
-	err := a.DB.QueryRow(ctx, `DELETE FROM property_media WHERE id=$1 AND property_id=$2 RETURNING object_key`, mid, id).Scan(&key)
+	var wasCover bool
+	err := a.DB.QueryRow(ctx, `DELETE FROM property_media WHERE id=$1 AND property_id=$2 RETURNING object_key,is_cover`, mid, id).Scan(&key, &wasCover)
 	if errors.Is(err, pgx.ErrNoRows) {
 		respond(w, 404, map[string]string{"error": "not found"})
 		return
@@ -270,6 +271,10 @@ func (a API) deleteMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	discard(key)
+	if wasCover {
+		// Keep a cover: promote the next photo in display order.
+		_, _ = a.DB.Exec(ctx, `UPDATE property_media SET is_cover=true WHERE id=(SELECT id FROM property_media WHERE property_id=$1 AND media_type='image' ORDER BY sort_order,created_at LIMIT 1)`, id)
+	}
 	respond(w, 200, map[string]bool{"deleted": true})
 }
 func (a API) serveMedia(w http.ResponseWriter, r *http.Request) {
@@ -281,7 +286,7 @@ func (a API) serveMedia(w http.ResponseWriter, r *http.Request) {
 	ctx, c := context.WithTimeout(r.Context(), 4*time.Second)
 	defer c()
 	var key, stat string
-	err := a.DB.QueryRow(ctx, `SELECT m.object_key,p.publish_status FROM property_media m JOIN properties p ON p.id=m.property_id WHERE m.id=$1`, mid).Scan(&key, &stat)
+	err := a.DB.QueryRow(ctx, `SELECT m.object_key,CASE WHEN p.deleted_at IS NULL THEN p.publish_status ELSE 'trashed' END FROM property_media m JOIN properties p ON p.id=m.property_id WHERE m.id=$1`, mid).Scan(&key, &stat)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -394,4 +399,78 @@ func (a API) downloadDocument(w http.ResponseWriter, r *http.Request) {
 		return r
 	}, name)))
 	io.Copy(w, f)
+}
+
+// PATCH /media/{mediaID} updates the photo description (alt text).
+func (a API) updateMediaAlt(w http.ResponseWriter, r *http.Request) {
+	id, mid := r.PathValue("id"), r.PathValue("mediaID")
+	if !safeId(id) || !safeId(mid) {
+		respond(w, 400, map[string]string{"error": "invalid id"})
+		return
+	}
+	var v struct {
+		Alt string `json:"alt_text"`
+	}
+	if !parse(w, r, &v) {
+		return
+	}
+	if v.Alt = strings.TrimSpace(v.Alt); len(v.Alt) > 300 {
+		respond(w, 422, map[string]string{"error": "Photo description max 300 characters."})
+		return
+	}
+	ctx, c := context.WithTimeout(r.Context(), 5*time.Second)
+	defer c()
+	tag, err := a.DB.Exec(ctx, `UPDATE property_media SET alt_text=$3 WHERE id=$1 AND property_id=$2`, mid, id, v.Alt)
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "update failed"})
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		respond(w, 404, map[string]string{"error": "media not found"})
+		return
+	}
+	respond(w, 200, map[string]bool{"updated": true})
+}
+
+// PUT /media/order sets the display order of every photo in one transaction.
+func (a API) reorderMedia(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if !safeId(id) {
+		respond(w, 400, map[string]string{"error": "invalid id"})
+		return
+	}
+	var v struct {
+		IDs []string `json:"ids"`
+	}
+	if !parse(w, r, &v) {
+		return
+	}
+	if len(v.IDs) == 0 || len(v.IDs) > 200 {
+		respond(w, 422, map[string]string{"error": "invalid order"})
+		return
+	}
+	ctx, c := context.WithTimeout(r.Context(), 5*time.Second)
+	defer c()
+	tx, err := a.DB.Begin(ctx)
+	if err != nil {
+		respond(w, 503, map[string]string{"error": "database unavailable"})
+		return
+	}
+	defer tx.Rollback(ctx)
+	for i, mid := range v.IDs {
+		if !safeId(mid) {
+			respond(w, 400, map[string]string{"error": "invalid id"})
+			return
+		}
+		tag, err := tx.Exec(ctx, `UPDATE property_media SET sort_order=$3 WHERE id=$1 AND property_id=$2`, mid, id, i)
+		if err != nil || tag.RowsAffected() == 0 {
+			respond(w, 404, map[string]string{"error": "media not found"})
+			return
+		}
+	}
+	if err = tx.Commit(ctx); err != nil {
+		respond(w, 503, map[string]string{"error": "update failed"})
+		return
+	}
+	respond(w, 200, map[string]bool{"updated": true})
 }

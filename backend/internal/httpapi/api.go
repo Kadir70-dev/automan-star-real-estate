@@ -53,43 +53,7 @@ func (a API) Handler() http.Handler {
 		}
 		respond(w, code, map[string]any{"status": status, "dependencies": map[string]dependency{"postgres": pg, "redis": rd}})
 	})
-	mux.HandleFunc("GET /api/v1/properties", func(w http.ResponseWriter, r *http.Request) {
-		if a.DB == nil {
-			respond(w, 503, map[string]string{"error": "database unavailable"})
-			return
-		}
-		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-		defer cancel()
-		rows, err := a.DB.Query(ctx, `SELECT id::text, slug, title, emirate, community, listing_type, price_aed::text FROM properties WHERE publish_status='published' ORDER BY created_at DESC LIMIT 24`)
-		if err != nil {
-			respond(w, 503, map[string]string{"error": "property lookup unavailable"})
-			return
-		}
-		defer rows.Close()
-		type property struct {
-			ID          string `json:"id"`
-			Slug        string `json:"slug"`
-			Title       string `json:"title"`
-			Emirate     string `json:"emirate"`
-			Community   string `json:"community"`
-			ListingType string `json:"listing_type"`
-			PriceAED    string `json:"price_aed"`
-		}
-		items := make([]property, 0)
-		for rows.Next() {
-			var item property
-			if err := rows.Scan(&item.ID, &item.Slug, &item.Title, &item.Emirate, &item.Community, &item.ListingType, &item.PriceAED); err != nil {
-				respond(w, 500, map[string]string{"error": "property read failure"})
-				return
-			}
-			items = append(items, item)
-		}
-		if rows.Err() != nil {
-			respond(w, 500, map[string]string{"error": "property read failure"})
-			return
-		}
-		respond(w, 200, map[string]any{"data": items, "count": len(items)})
-	})
+	mux.HandleFunc("GET /api/v1/properties", a.publicPropertyList)
 	mux.HandleFunc("GET /api/v1/properties/{slug}", a.publicPropertyDetail)
 	// CMS public reads are limited to published, validated page documents.
 	mux.HandleFunc("GET /api/v1/cms/public/{slug}", a.cmsPublicPage)
@@ -111,7 +75,11 @@ func (a API) Handler() http.Handler {
 	mux.HandleFunc("POST /api/v1/admin/properties", a.requireRole("admin", "manager")(a.createProperty))
 	mux.HandleFunc("PUT /api/v1/admin/properties/{id}", a.requireRole("admin", "manager")(a.updateProperty))
 	mux.HandleFunc("PATCH /api/v1/admin/properties/{id}/status", a.requireRole("admin", "manager")(a.publishProperty))
+	mux.HandleFunc("GET /api/v1/admin/properties/{id}", a.requireRole("admin", "manager", "agent")(a.propertyAdminGet))
 	mux.HandleFunc("DELETE /api/v1/admin/properties/{id}", a.requireRole("admin", "manager")(a.archiveProperty))
+	mux.HandleFunc("POST /api/v1/admin/properties/{id}/restore", a.requireRole("admin", "manager")(a.restoreProperty))
+	mux.HandleFunc("PUT /api/v1/admin/properties/{id}/media/order", a.requireRole("admin", "manager")(a.reorderMedia))
+	mux.HandleFunc("PATCH /api/v1/admin/properties/{id}/media/{mediaID}", a.requireRole("admin", "manager")(a.updateMediaAlt))
 	mux.HandleFunc("GET /api/v1/admin/properties/{id}/media", a.requireRole("admin", "manager", "agent")(a.listMedia))
 	mux.HandleFunc("POST /api/v1/admin/properties/{id}/media", a.requireRole("admin", "manager")(a.uploadMedia))
 	mux.HandleFunc("PATCH /api/v1/admin/properties/{id}/media/{mediaID}/cover", a.requireRole("admin", "manager")(a.coverMedia))
