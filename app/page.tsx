@@ -6,6 +6,7 @@ import Hero from '@/components/Hero';
 import EntranceDoor from '@/components/EntranceDoor';
 import PropertyCard from '@/components/PropertyCard';
 import ListingCard from '@/components/ListingCard';
+import FounderPortrait from '@/components/FounderPortrait';
 import {getLiveProperties} from '@/lib/live-properties';
 import {communities,properties} from '@/lib/data';
 import {LEADERSHIP} from '@/lib/leadership';
@@ -69,11 +70,11 @@ export default async function Home(){const [cms,{data}]=await Promise.all([getCm
 
  <section className="home-founder" aria-labelledby="founder-name">
   <div className="container home-founder-grid">
-   <figure className="founder-portrait">
+   {cmsText(cms,'team.image','/saud.jpeg')==='/saud.jpeg'?<FounderPortrait alt={cmsText(cms,'team.alt','Saud Kondekar, Founder and CEO of Automan Star Real Estate, in his Business Bay office')}/>:<figure className="founder-portrait">
     <div className="founder-frame">
      {(()=>{const src=cmsText(cms,'team.image','/saud.jpeg');return <Image data-cms-image="team.image" src={src} unoptimized fill alt={cmsText(cms,'team.alt','Saud Kondekar, Founder and CEO of Automan Star Real Estate, in his Business Bay office')} sizes="(max-width: 800px) 100vw, 42vw"/>})()}
     </div>
-   </figure>
+   </figure>}
    <div className="founder-copy">
     <span className="founder-monogram" aria-hidden="true">{FOUNDER.initials}</span>
     <h2 id="founder-name" data-cms-field="leadership.0.name">{cmsText(cms,'leadership.0.name',FOUNDER.name)}</h2>
