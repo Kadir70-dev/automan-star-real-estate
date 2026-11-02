@@ -68,7 +68,7 @@ export default async function Home(){const [cms,{data}]=await Promise.all([getCm
   </div>
  </section>
 
- <section className="home-founder" aria-labelledby="founder-name">
+ <section className={cmsText(cms,'team.image','/saud.jpeg')==='/saud.jpeg'?'home-founder founder-3d':'home-founder'} aria-labelledby="founder-name">
   <div className="container home-founder-grid">
    {cmsText(cms,'team.image','/saud.jpeg')==='/saud.jpeg'?<FounderPortrait alt={cmsText(cms,'team.alt','Saud Kondekar, Founder and CEO of Automan Star Real Estate, in his Business Bay office')}/>:<figure className="founder-portrait">
     <div className="founder-frame">
