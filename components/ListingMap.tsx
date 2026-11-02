@@ -1,9 +1,10 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {MapPin,Navigation,ExternalLink} from 'lucide-react';
+import {MapPin,Navigation,ExternalLink,Layers} from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './listing-map.css';
 import {locateArea} from '@/lib/locations';
+import {setSatellite} from '@/lib/map-satellite';
 
 // Interactive area map (MapLibre + OpenFreeMap vector tiles: no API key/token).
 // The library loads only when the section scrolls into view; without WebGL or
@@ -15,7 +16,8 @@ function circle([lng,lat]:[number,number],km:number){
 }
 
 export default function ListingMap({title,community,emirate,lat,lng}:{title:string;community:string;emirate:string;lat?:number|null;lng?:number|null}){
- const box=useRef<HTMLDivElement>(null),[state,setState]=useState<'idle'|'ready'|'failed'>('idle');
+ const box=useRef<HTMLDivElement>(null),[state,setState]=useState<'idle'|'ready'|'failed'>('idle'),[sat,setSat]=useState(false);
+ const mapRef=useRef<import('maplibre-gl').Map|null>(null);
  const exact=lat!=null&&lng!=null;
  const spot=exact?{c:[lng,lat] as [number,number],z:15}:locateArea(community,emirate);
  const place=`${community}, ${emirate}, UAE`;
@@ -31,7 +33,7 @@ export default function ListingMap({title,community,emirate,lat,lng}:{title:stri
     const ml=(await import('maplibre-gl')).default;if(dead)return;
     const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
     map=new ml.Map({container:el,style:STYLE,center:spot.c,zoom:spot.z-2.2,pitch:0,attributionControl:{compact:true},cooperativeGestures:true,maxZoom:17});
-    map.addControl(new ml.NavigationControl({showCompass:false}),'top-right');
+    mapRef.current=map;map.addControl(new ml.NavigationControl({showCompass:false}),'top-right');
     map.addControl(new ml.FullscreenControl(),'top-right');
     const pin=document.createElement('div');pin.className='lm-pin';pin.innerHTML='<span></span>';pin.setAttribute('aria-hidden','true');
     new ml.Marker({element:pin,anchor:'center'}).setLngLat(spot.c).addTo(map);
@@ -40,7 +42,7 @@ export default function ListingMap({title,community,emirate,lat,lng}:{title:stri
      if(!exact&&spot.z>=13){
       map.addSource('area',{type:'geojson',data:circle(spot.c,1.4)});
       map.addLayer({id:'area-fill',type:'fill',source:'area',paint:{'fill-color':'#c6a878','fill-opacity':.14}});
-      map.addLayer({id:'area-line',type:'line',source:'area',paint:{'line-color':'#a18860','line-width':1.5,'line-dasharray':[2,2]}});
+      map.addLayer({id:'area-line',type:'line',source:'area',paint:{'line-color':'#a18860','line-width':2,'line-dasharray':[2,2]}});
      }
      setState('ready');
      map.easeTo({center:spot.c,zoom:spot.z,padding:el.clientWidth>600?{left:340,top:0,right:0,bottom:0}:{top:0,left:0,right:0,bottom:0},pitch:reduce?0:42,bearing:reduce?0:-12,duration:reduce?0:2600});
@@ -49,7 +51,7 @@ export default function ListingMap({title,community,emirate,lat,lng}:{title:stri
    }catch{if(!dead)setState('failed')}
   },{rootMargin:'200px'});
   io.observe(el);
-  return()=>{dead=true;io.disconnect();map?.remove()};
+  return()=>{dead=true;io.disconnect();map?.remove();mapRef.current=null};
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[spot?.c[0],spot?.c[1],spot?.z,exact]);
 
@@ -57,6 +59,7 @@ export default function ListingMap({title,community,emirate,lat,lng}:{title:stri
  return <div className={'lm '+state}>
   <div ref={box} className="lm-canvas" role="region" aria-label={`Map of ${place}`}/>
   {state==='idle'&&<div className="lm-skeleton" aria-hidden="true"/>}
+  {state==='ready'&&<button type="button" className="lm-toggle" aria-pressed={sat} onClick={()=>{const m=mapRef.current;if(!m)return;setSatellite(m,!sat);setSat(!sat)}}><Layers size={14}/> {sat?'Map':'Satellite'}</button>}
   <div className="lm-card">
    <span className="lm-eyebrow">{exact?'LOCATION':spot.z>=13?'APPROXIMATE AREA':'EMIRATE'}</span>
    <strong>{community}</strong>

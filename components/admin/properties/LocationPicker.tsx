@@ -1,8 +1,9 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {Crosshair,Search,X} from 'lucide-react';
+import {Crosshair,Layers,Search,X} from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {locateArea} from '@/lib/locations';
+import {setSatellite} from '@/lib/map-satellite';
 
 // Admin map pin: click the map or drag the pin. Optional address search uses
 // OpenStreetMap Nominatim (UAE only, on Enter, so it stays within fair use).
@@ -17,7 +18,7 @@ export default function LocationPicker({lat,lng,community,emirate,disabled,onCha
  const map=useRef<import('maplibre-gl').Map|null>(null),marker=useRef<import('maplibre-gl').Marker|null>(null),lib=useRef<typeof import('maplibre-gl')|null>(null);
  const change=useRef(onChange);change.current=onChange;
  const lock=useRef(disabled);lock.current=disabled;
- const[q,setQ]=useState(''),[msg,setMsg]=useState(''),[busy,setBusy]=useState(false);
+ const[sat,setSat]=useState(false),[q,setQ]=useState(''),[msg,setMsg]=useState(''),[busy,setBusy]=useState(false);
 
  function place(p:{lat:number;lng:number},emit=true){
   const m=map.current,ml=lib.current;if(!m||!ml)return;
@@ -62,6 +63,7 @@ export default function LocationPicker({lat,lng,community,emirate,disabled,onCha
   {!disabled&&<div className="pm-loc-bar">
    <label className="pm-loc-search"><Search size={15} aria-hidden="true"/><span className="pm-sr">Search address</span>
     <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();void search()}}} placeholder="Search building, street or area, then press Enter"/></label>
+   <button type="button" className="pm-btn" aria-pressed={sat} onClick={()=>{if(!map.current)return;setSatellite(map.current,!sat);setSat(!sat)}}><Layers size={15}/> {sat?'Map view':'Satellite'}</button>
    <button type="button" className="pm-btn" onClick={centreOnArea}><Crosshair size={15}/> Go to community</button>
    {lat!=null&&<button type="button" className="pm-btn pm-danger-text" onClick={clear}><X size={15}/> Clear pin</button>}
   </div>}
