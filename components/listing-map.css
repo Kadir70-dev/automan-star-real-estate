@@ -1,0 +1,24 @@
+.lm{position:relative;height:460px;overflow:hidden;background:#eceae4;border:1px solid var(--line);isolation:isolate}
+.lm-canvas{position:absolute;inset:0}
+.lm-canvas canvas{filter:saturate(.75) sepia(.12)}
+.lm-skeleton{position:absolute;inset:0;background:linear-gradient(110deg,#eceae4 30%,#f6f5f1 50%,#eceae4 70%) 0 0/250% 100%;animation:lm-shimmer 1.6s linear infinite}
+.lm::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px rgba(16,25,29,.16);z-index:1}
+.lm-pin{width:22px;height:22px;border-radius:50%;background:#10191d;border:3px solid #c6a878;box-shadow:0 6px 18px rgba(16,25,29,.4);position:relative}
+.lm-pin span{position:absolute;inset:-12px;border-radius:50%;border:2px solid rgba(198,168,120,.7);animation:lm-pulse 2.4s ease-out infinite}
+.lm-card{position:absolute;z-index:2;left:22px;bottom:22px;width:min(330px,calc(100% - 44px));padding:22px 24px;background:rgba(16,25,29,.86);color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(198,168,120,.35);box-shadow:0 20px 50px rgba(16,25,29,.3);opacity:0;transform:translateY(12px);transition:opacity .6s .3s,transform .6s .3s}
+.lm.ready .lm-card,.lm.idle .lm-card{opacity:1;transform:none}
+.lm-eyebrow{display:block;font-size:9px;letter-spacing:.24em;font-weight:700;color:#c6a878}
+.lm-card strong{display:block;font-size:24px;font-weight:550;letter-spacing:-.04em;margin:9px 0 4px}
+.lm-card small{font-size:12px;color:#c6ccca}
+.lm-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.lm-actions a{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;font-size:10px;letter-spacing:.12em;font-weight:800;text-transform:uppercase;border:1px solid rgba(255,255,255,.28);transition:background .25s,color .25s}
+.lm-actions a:first-child{background:#c6a878;border-color:#c6a878;color:#111}
+.lm-actions a:hover{background:#fff;color:#111}
+.lm-note{margin:14px 0 0!important;font-size:10.5px!important;line-height:1.5!important;color:#9aa4a2!important}
+.lm .maplibregl-ctrl-group{border-radius:0;box-shadow:0 8px 24px rgba(16,25,29,.18)}
+.lm .maplibregl-ctrl-group button{width:36px;height:36px}
+.lm .maplibregl-cooperative-gesture-screen{font-size:14px;background:rgba(16,25,29,.6)}
+@keyframes lm-pulse{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.9);opacity:0}}
+@keyframes lm-shimmer{to{background-position:-250% 0}}
+@media(max-width:600px){.lm{height:auto;background:#10191d}.lm-canvas{position:relative;height:300px}.lm-skeleton{height:300px;bottom:auto}.lm::after{bottom:auto;height:300px}.lm-card{position:relative;left:0;bottom:0;width:100%;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;background:#10191d}}
+@media(prefers-reduced-motion:reduce){.lm-pin span,.lm-skeleton{animation:none}}

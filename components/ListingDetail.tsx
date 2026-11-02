@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {ArrowLeft,BedDouble,Bath,Building2,Check,Expand,MapPin,MessageCircle} from 'lucide-react';
 import Enquiry from '@/components/Enquiry';
 import ListingGallery from '@/components/ListingGallery';
+import ListingMap from '@/components/ListingMap';
 import {BUSINESS,SITE_URL,jsonLdHtml,breadcrumbJsonLd} from '@/lib/seo';
 import {type LivePropertyDetail,CATEGORY_LABEL,STATUS_LABEL,compactAed,isOffPlan,locationOf,mediaUrl} from '@/lib/live-properties';
 
@@ -60,7 +61,7 @@ export default function ListingDetail({p,whatsapp,preview=false}:{p:LiveProperty
      {p.description&&<div className="detail-section"><p className="eyebrow dark-eyebrow">ABOUT</p><h2>About {p.title}</h2>{p.description.split(/\n{2,}/).map((para,i)=><p key={i}>{para}</p>)}</div>}
      {!!p.unit_mix?.length&&<div className="detail-section"><p className="eyebrow dark-eyebrow">PROPERTY TYPES</p><h2>Homes available</h2><div className="amenities">{p.unit_mix.map(u=><span key={u}><Building2 size={16}/>{u}</span>)}</div></div>}
      {!!p.highlights?.length&&<div className="detail-section"><p className="eyebrow dark-eyebrow">HIGHLIGHTS</p><h2>Lifestyle &amp; amenities</h2><div className="amenities">{p.highlights.map(h=><span key={h}><Check size={16}/>{h}</span>)}</div></div>}
-     <div className="detail-section"><p className="eyebrow dark-eyebrow">LOCATION</p><h2>{locationOf(p)}</h2><div className="map-placeholder"><MapPin size={25}/><p>{p.community}, {p.emirate}, UAE</p><a target="_blank" rel="noopener noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.title}, ${p.community}, ${p.emirate}`)}`}>VIEW ON GOOGLE MAPS ↗</a></div></div>
+     <div className="detail-section"><p className="eyebrow dark-eyebrow">LOCATION</p><h2>{locationOf(p)}</h2><ListingMap title={p.title} community={p.community} emirate={p.emirate}/></div>
     </div>
     <aside className="detail-sidebar"><div className="enquiry-panel">
      <p className="eyebrow dark-eyebrow">REGISTER YOUR INTEREST</p>
