@@ -6,6 +6,8 @@ import Enquiry from '@/components/Enquiry';
 import LivePropertyGallery from '@/components/LivePropertyGallery';
 import {Breadcrumbs} from '@/components/SeoGuide';
 import {BUSINESS,pageMetadata} from '@/lib/seo';
+import ProjectDetail from '@/components/ProjectDetail';
+import {getProject,projectLocation} from '@/lib/projects';
 type Detail={id:string;slug:string;title:string;description:string;emirate:string;community:string;category:string;listing_type:string;construction_status:string;price_aed:string;reference_code:string;bedrooms:number|null;bathrooms:number|null;area_sqft:number|null;media:{id:string;alt:string;is_cover:boolean}[]};
 type Fetched={status:'ok';p:Detail}|{status:'missing'}|{status:'error'};
 export const dynamic='force-dynamic';
@@ -16,7 +18,10 @@ const fetchProperty=cache(async(slug:string):Promise<Fetched>=>{
 });
 const isComplete=(p:Detail)=>Boolean(p.title&&p.slug&&p.community&&p.emirate);
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
- const {slug}=await params;const r=await fetchProperty(slug);
+ const {slug}=await params;
+ const project=getProject(slug);
+ if(project)return pageMetadata({path:`/properties/${project.slug}`,title:project.seoTitle,socialTitle:`${project.name} by ${project.developer} | ${projectLocation(project)}`,description:project.seoDescription,image:{url:project.cover.src,width:project.cover.width,height:project.cover.height,alt:project.cover.alt}});
+ const r=await fetchProperty(slug);
  // Never let outages or incomplete records become crawlable thin pages.
  if(r.status!=='ok'||!isComplete(r.p))return {title:'Property details unavailable',robots:{index:false,follow:true}};
  const p=r.p;const title=`${p.title} in ${p.community}, ${p.emirate}`;
@@ -25,6 +30,8 @@ export async function generateMetadata({params}:{params:Promise<{slug:string}>})
 }
 export default async function PropertyDetail({params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
+ const project=getProject(slug);
+ if(project)return <ProjectDetail project={project}/>;
  const r=await fetchProperty(slug);
  if(r.status==='missing')notFound();
  if(r.status==='error')return <main className="page-shell container"><h1>Property temporarily unavailable</h1><p>Please try again when the property service is online.</p><Link href="/properties">Back to properties</Link></main>;

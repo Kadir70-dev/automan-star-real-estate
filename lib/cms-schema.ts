@@ -46,7 +46,7 @@ export const CMS_PAGES:CmsPageDef[]=[
  ]},
  {slug:'site',name:'Global Settings',path:'/',fields:[
   field('header.logo','Header logo URL','image'),field('header.logo_alt','Logo image description'),field('header.favicon','Favicon URL','image'),
-  field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.locality','Area / locality'),field('business.region','Emirate'),field('business.phone','Telephone'),
+  field('business.name','Business name'),field('business.address','Office address','textarea'),field('business.locality','Area / locality'),field('business.region','Emirate'),field('business.phone','Telephone'),field('business.whatsapp','WhatsApp number (with country code)'),
   field('footer.heading','Footer headline','textarea'),field('footer.cta','Footer button'),field('footer.cta.href','Footer button destination','link'),field('footer.email','Contact email'),
   field('social.linkedin','LinkedIn URL','link'),field('social.instagram','Instagram URL','link'),
   ...[['properties','Properties'],['buy','Buy'],['off-plan','Off-plan'],['commercial','Commercial'],['experience','3D residence'],['about','About'],['contact','Contact'],['privacy','Privacy Policy']].flatMap(([key,label])=>[field('nav.'+key,'Menu: '+label),field('nav.'+key+'.href','Menu link: '+label,'link')]),

@@ -18,13 +18,13 @@ export const BUSINESS={
 export const OG_IMAGE={url:'/og-image.jpg',width:1200,height:630,alt:'Automan Star Real Estate, Business Bay, Dubai'};
 
 // Per-page metadata with a canonical URL and matching Open Graph/Twitter tags.
-export function pageMetadata({path,title,description,socialTitle}:{path:string;title:string;description:string;socialTitle?:string}):Metadata{
+export function pageMetadata({path,title,description,socialTitle,image=OG_IMAGE}:{path:string;title:string;description:string;socialTitle?:string;image?:typeof OG_IMAGE}):Metadata{
  const og=socialTitle||`${title} | ${BUSINESS.name}`;
  return {
   title,description,
   alternates:{canonical:path},
-  openGraph:{title:og,description,url:path,type:'website',siteName:BUSINESS.name,locale:'en_AE',images:[OG_IMAGE]},
-  twitter:{card:'summary_large_image',title:og,description,images:[OG_IMAGE.url]},
+  openGraph:{title:og,description,url:path,type:'website',siteName:BUSINESS.name,locale:'en_AE',images:[image]},
+  twitter:{card:'summary_large_image',title:og,description,images:[image.url]},
  };
 }
 
