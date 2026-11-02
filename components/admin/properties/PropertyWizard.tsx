@@ -4,6 +4,7 @@ import {Check,ChevronLeft,ChevronRight,ExternalLink} from 'lucide-react';
 import ListingDetail from '@/components/ListingDetail';
 import type {LivePropertyDetail} from '@/lib/live-properties';
 import PhotoManager from './PhotoManager';
+import LocationPicker from './LocationPicker';
 import {api,blankForm,slugify,toForm,type AdminProperty,type Photo,type PropertyForm} from './api';
 import {useConfirm} from './ConfirmDialog';
 
@@ -114,6 +115,7 @@ export default function PropertyWizard({editId,initialStep=0,editable,onClose,on
     <label htmlFor="pf-community">Community / area <b>*</b><input {...field('community')} value={form.community} onChange={e=>set('community',e.target.value)} placeholder="e.g. Dubai Marina"/>{err('community')}</label>
     <label htmlFor="pf-community_size">Community size <i>(optional)</i><input {...field('community_size')} value={form.community_size} onChange={e=>set('community_size',e.target.value)} placeholder="e.g. ~30M sq. ft."/></label>
     <label htmlFor="pf-permit_number">Permit / RERA number <i>(optional)</i><input {...field('permit_number')} value={form.permit_number} onChange={e=>set('permit_number',e.target.value)}/></label>
+    <div className="pm-span2"><span className="pm-label">Exact location on map <i>(optional)</i></span><LocationPicker lat={form.latitude} lng={form.longitude} community={form.community} emirate={form.emirate} disabled={!editable} onChange={pin=>setForm(f=>({...f,latitude:pin?.lat??null,longitude:pin?.lng??null}))}/></div>
     <label className="pm-check pm-span2"><input type="checkbox" checked={form.featured} onChange={e=>set('featured',e.target.checked)}/> Feature on the home page</label>
     <details className="pm-span2 pm-advanced"><summary>Advanced: web address &amp; Google listing</summary><div className="pm-grid">
      <label className="pm-span2" htmlFor="pf-slug">Web address <b>*</b><span className="pm-prefix"><span>/properties/</span><input {...field('slug')} value={form.slug} onChange={e=>{setSlugTouched(true);set('slug',slugify(e.target.value))}}/></span>{err('slug')}{live&&<small>Changing this breaks links that were already shared.</small>}</label>

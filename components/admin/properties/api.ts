@@ -4,7 +4,7 @@ export type Staff={id:string;name:string;role:string};
 export type AdminProperty={
  id:string;slug:string;reference_code:string;title:string;description:string;emirate:string;community:string;
  category:string;listing_type:string;construction_status:string;price_aed:number;bedrooms:number|null;bathrooms:number|null;area_sqft:number|null;
- permit_number:string;developer:string;price_from:boolean;community_size:string;unit_mix:string[];highlights:string[];
+ permit_number:string;developer:string;latitude:number|null;longitude:number|null;price_from:boolean;community_size:string;unit_mix:string[];highlights:string[];
  seo_title:string;seo_description:string;featured:boolean;publish_status:'draft'|'published'|'archived';
  deleted_at:string|null;created_at:string;updated_at:string;cover_id:string|null;media_count:number;
 };
@@ -47,7 +47,7 @@ export const api={
 
 export const slugify=(s:string)=>s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,120);
 export const newReference=()=>{const d=new Date();return `AMS-${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${Math.random().toString(36).slice(2,6).toUpperCase()}`};
-export const blankForm=():PropertyForm=>({slug:'',reference_code:newReference(),title:'',description:'',emirate:'Dubai',community:'',category:'apartment',listing_type:'sale',construction_status:'ready',price_aed:0,bedrooms:null,bathrooms:null,area_sqft:null,permit_number:'',developer:'',price_from:false,community_size:'',unit_mix:[],highlights:[],seo_title:'',seo_description:'',featured:false});
+export const blankForm=():PropertyForm=>({slug:'',reference_code:newReference(),title:'',description:'',emirate:'Dubai',community:'',category:'apartment',listing_type:'sale',construction_status:'ready',price_aed:0,bedrooms:null,bathrooms:null,area_sqft:null,permit_number:'',developer:'',price_from:false,community_size:'',unit_mix:[],highlights:[],seo_title:'',seo_description:'',featured:false,latitude:null,longitude:null});
 const FORM_KEYS=Object.keys(blankForm()) as (keyof PropertyForm)[];
 export const toForm=(p:AdminProperty):PropertyForm=>{const f=Object.fromEntries(FORM_KEYS.map(k=>[k,p[k]])) as PropertyForm;return {...f,permit_number:f.permit_number||'',unit_mix:f.unit_mix||[],highlights:f.highlights||[],price_aed:Number(f.price_aed)}};
 export const statusLabel=(p:AdminProperty)=>p.deleted_at?'In trash':p.publish_status==='published'?'Live on website':'Draft (not on website)';

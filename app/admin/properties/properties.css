@@ -101,3 +101,11 @@ fieldset.pm-card:disabled{opacity:1}
 .pm-dialog{width:min(440px,100%);background:#0f1b27;border:1px solid var(--st-line);border-radius:18px;padding:22px;display:grid;gap:12px;color:#fff;font-family:var(--sans),Arial,sans-serif}
 .pm-dialog h2{margin:0;font-size:19px}.pm-dialog p{margin:0;color:rgba(255,255,255,.75);font-size:15px;line-height:1.5}
 .pm-dialog-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}.pm-dialog-actions .pm-btn{flex:1 1 140px}
+.pm-label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+.pm-loc{display:grid;gap:10px}
+.pm-loc-bar{display:flex;gap:8px;flex-wrap:wrap}
+.pm-loc-search{flex:1 1 260px;display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:0 12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+.pm-loc-search input{flex:1;border:0!important;background:transparent!important;padding:11px 0!important;outline:none;color:inherit;min-width:0}
+.pm-loc-map{height:340px;border:1px solid rgba(198,168,120,.35);overflow:hidden;cursor:crosshair}
+.pm-loc-help{margin:0;font-size:12px}
+@media(max-width:600px){.pm-loc-map{height:280px}.pm-loc-bar .pm-btn{flex:1}}

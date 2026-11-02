@@ -7,7 +7,7 @@ export type LiveProperty = {
  bedrooms?:number|null;bathrooms?:number|null;area_sqft?:number|null;
  developer?:string;price_from?:boolean;community_size?:string;
  unit_mix?:string[];highlights?:string[];seo_title?:string;seo_description?:string;
- featured?:boolean;cover_id?:string|null;cover_alt?:string;updated_at?:string;
+ featured?:boolean;latitude?:number|null;longitude?:number|null;cover_id?:string|null;cover_alt?:string;updated_at?:string;
 };
 export type LiveMedia={id:string;alt:string;is_cover:boolean};
 export type LivePropertyDetail=LiveProperty&{description:string;media:LiveMedia[]};

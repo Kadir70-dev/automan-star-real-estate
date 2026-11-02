@@ -61,7 +61,7 @@ export default function ListingDetail({p,whatsapp,preview=false}:{p:LiveProperty
      {p.description&&<div className="detail-section"><p className="eyebrow dark-eyebrow">ABOUT</p><h2>About {p.title}</h2>{p.description.split(/\n{2,}/).map((para,i)=><p key={i}>{para}</p>)}</div>}
      {!!p.unit_mix?.length&&<div className="detail-section"><p className="eyebrow dark-eyebrow">PROPERTY TYPES</p><h2>Homes available</h2><div className="amenities">{p.unit_mix.map(u=><span key={u}><Building2 size={16}/>{u}</span>)}</div></div>}
      {!!p.highlights?.length&&<div className="detail-section"><p className="eyebrow dark-eyebrow">HIGHLIGHTS</p><h2>Lifestyle &amp; amenities</h2><div className="amenities">{p.highlights.map(h=><span key={h}><Check size={16}/>{h}</span>)}</div></div>}
-     <div className="detail-section"><p className="eyebrow dark-eyebrow">LOCATION</p><h2>{locationOf(p)}</h2><ListingMap title={p.title} community={p.community} emirate={p.emirate}/></div>
+     <div className="detail-section"><p className="eyebrow dark-eyebrow">LOCATION</p><h2>{locationOf(p)}</h2><ListingMap title={p.title} community={p.community} emirate={p.emirate} lat={p.latitude} lng={p.longitude}/></div>
     </div>
     <aside className="detail-sidebar"><div className="enquiry-panel">
      <p className="eyebrow dark-eyebrow">REGISTER YOUR INTEREST</p>

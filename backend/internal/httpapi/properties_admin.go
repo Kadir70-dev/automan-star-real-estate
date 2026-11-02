@@ -32,6 +32,8 @@ type propertyInput struct {
 	Developer          string   `json:"developer"`
 	PriceFrom          bool     `json:"price_from"`
 	CommunitySize      string   `json:"community_size"`
+	Latitude           *float64 `json:"latitude"`
+	Longitude          *float64 `json:"longitude"`
 	UnitMix            []string `json:"unit_mix"`
 	Highlights         []string `json:"highlights"`
 	SeoTitle           string   `json:"seo_title"`
@@ -100,6 +102,10 @@ func (v *propertyInput) validate() string {
 		return "Area must be greater than 0."
 	case !runes(v.Developer, 0, 160), !runes(v.CommunitySize, 0, 60), !runes(v.PermitNumber, 0, 80):
 		return "Developer, community size or permit number is too long."
+	case (v.Latitude == nil) != (v.Longitude == nil):
+		return "Set both map coordinates or clear the pin."
+	case v.Latitude != nil && (*v.Latitude < 22.4 || *v.Latitude > 26.4 || *v.Longitude < 51.4 || *v.Longitude > 56.6):
+		return "The map pin must be inside the UAE."
 	case !runes(v.SeoTitle, 0, 120), !runes(v.SeoDescription, 0, 300):
 		return "Search title max 120 and search description max 300 characters."
 	}
@@ -112,7 +118,7 @@ func (v *propertyInput) validate() string {
 	return ""
 }
 
-const adminPropertyColumns = `p.id::text,p.slug,p.reference_code,p.title,p.description,p.emirate,p.community,p.category,p.listing_type,p.construction_status,p.price_aed::float8,p.bedrooms,p.bathrooms,p.area_sqft::float8,COALESCE(p.permit_number,''),p.developer,p.price_from,p.community_size,p.unit_mix,p.highlights,p.seo_title,p.seo_description,p.featured,p.publish_status,p.deleted_at,p.created_at,p.updated_at,
+const adminPropertyColumns = `p.id::text,p.slug,p.reference_code,p.title,p.description,p.emirate,p.community,p.category,p.listing_type,p.construction_status,p.price_aed::float8,p.bedrooms,p.bathrooms,p.area_sqft::float8,COALESCE(p.permit_number,''),p.developer,p.price_from,p.community_size,p.latitude::float8,p.longitude::float8,p.unit_mix,p.highlights,p.seo_title,p.seo_description,p.featured,p.publish_status,p.deleted_at,p.created_at,p.updated_at,
  (SELECT m.id::text FROM property_media m WHERE m.property_id=p.id AND m.media_type='image' ORDER BY m.is_cover DESC,m.sort_order,m.created_at LIMIT 1),
  (SELECT count(*) FROM property_media m WHERE m.property_id=p.id AND m.media_type='image')`
 
@@ -129,7 +135,7 @@ type adminProperty struct {
 
 func scanAdminProperty(row pgx.Row) (adminProperty, error) {
 	var p adminProperty
-	err := row.Scan(&p.ID, &p.Slug, &p.Reference, &p.Title, &p.Description, &p.Emirate, &p.Community, &p.Category, &p.ListingType, &p.ConstructionStatus, &p.PriceAED, &p.Bedrooms, &p.Bathrooms, &p.AreaSqft, &p.PermitNumber, &p.Developer, &p.PriceFrom, &p.CommunitySize, &p.UnitMix, &p.Highlights, &p.SeoTitle, &p.SeoDescription, &p.Featured, &p.Status, &p.DeletedAt, &p.CreatedAt, &p.UpdatedAt, &p.CoverID, &p.MediaCount)
+	err := row.Scan(&p.ID, &p.Slug, &p.Reference, &p.Title, &p.Description, &p.Emirate, &p.Community, &p.Category, &p.ListingType, &p.ConstructionStatus, &p.PriceAED, &p.Bedrooms, &p.Bathrooms, &p.AreaSqft, &p.PermitNumber, &p.Developer, &p.PriceFrom, &p.CommunitySize, &p.Latitude, &p.Longitude, &p.UnitMix, &p.Highlights, &p.SeoTitle, &p.SeoDescription, &p.Featured, &p.Status, &p.DeletedAt, &p.CreatedAt, &p.UpdatedAt, &p.CoverID, &p.MediaCount)
 	return p, err
 }
 
@@ -195,13 +201,13 @@ func (a API) saveProperty(w http.ResponseWriter, r *http.Request, id string) {
 	s, _ := a.session(r)
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
-	args := []any{v.Slug, v.Reference, v.Title, v.Description, v.Emirate, v.Community, v.Category, v.ListingType, v.ConstructionStatus, v.PriceAED, v.Bedrooms, v.Bathrooms, v.AreaSqft, v.PermitNumber, v.Developer, v.PriceFrom, v.CommunitySize, v.UnitMix, v.Highlights, v.SeoTitle, v.SeoDescription, v.Featured}
+	args := []any{v.Slug, v.Reference, v.Title, v.Description, v.Emirate, v.Community, v.Category, v.ListingType, v.ConstructionStatus, v.PriceAED, v.Bedrooms, v.Bathrooms, v.AreaSqft, v.PermitNumber, v.Developer, v.PriceFrom, v.CommunitySize, v.UnitMix, v.Highlights, v.SeoTitle, v.SeoDescription, v.Featured, v.Latitude, v.Longitude}
 	var err error
 	if id == "" {
-		err = a.DB.QueryRow(ctx, `INSERT INTO properties(slug,reference_code,title,description,emirate,community,category,listing_type,construction_status,price_aed,bedrooms,bathrooms,area_sqft,permit_number,developer,price_from,community_size,unit_mix,highlights,seo_title,seo_description,featured) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING id::text`, args...).Scan(&id)
+		err = a.DB.QueryRow(ctx, `INSERT INTO properties(slug,reference_code,title,description,emirate,community,category,listing_type,construction_status,price_aed,bedrooms,bathrooms,area_sqft,permit_number,developer,price_from,community_size,unit_mix,highlights,seo_title,seo_description,featured,latitude,longitude) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) RETURNING id::text`, args...).Scan(&id)
 	} else {
 		var tag interface{ RowsAffected() int64 }
-		tag, err = a.DB.Exec(ctx, `UPDATE properties SET slug=$2,reference_code=$3,title=$4,description=$5,emirate=$6,community=$7,category=$8,listing_type=$9,construction_status=$10,price_aed=$11,bedrooms=$12,bathrooms=$13,area_sqft=$14,permit_number=$15,developer=$16,price_from=$17,community_size=$18,unit_mix=$19,highlights=$20,seo_title=$21,seo_description=$22,featured=$23,updated_at=now() WHERE id=$1`, append([]any{id}, args...)...)
+		tag, err = a.DB.Exec(ctx, `UPDATE properties SET slug=$2,reference_code=$3,title=$4,description=$5,emirate=$6,community=$7,category=$8,listing_type=$9,construction_status=$10,price_aed=$11,bedrooms=$12,bathrooms=$13,area_sqft=$14,permit_number=$15,developer=$16,price_from=$17,community_size=$18,unit_mix=$19,highlights=$20,seo_title=$21,seo_description=$22,featured=$23,latitude=$24,longitude=$25,updated_at=now() WHERE id=$1`, append([]any{id}, args...)...)
 		if err == nil && tag.RowsAffected() == 0 {
 			respond(w, 404, map[string]string{"error": "property not found"})
 			return

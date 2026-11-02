@@ -29,6 +29,8 @@ type publicProperty struct {
 	Developer          string   `json:"developer"`
 	PriceFrom          bool     `json:"price_from"`
 	CommunitySize      string   `json:"community_size"`
+	Latitude           *float64 `json:"latitude"`
+	Longitude          *float64 `json:"longitude"`
 	UnitMix            []string `json:"unit_mix"`
 	Highlights         []string `json:"highlights"`
 	SeoTitle           string   `json:"seo_title"`
@@ -45,12 +47,12 @@ type media struct {
 	Cover bool   `json:"is_cover"`
 }
 
-const publicColumns = `p.id::text,p.slug,p.reference_code,p.title,p.description,p.emirate,p.community,p.category,p.listing_type,p.construction_status,p.price_aed::text,p.bedrooms,p.bathrooms,p.area_sqft::float8,p.developer,p.price_from,p.community_size,p.unit_mix,p.highlights,p.seo_title,p.seo_description,p.featured,to_char(p.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"'),c.id::text,COALESCE(c.alt_text,'')`
+const publicColumns = `p.id::text,p.slug,p.reference_code,p.title,p.description,p.emirate,p.community,p.category,p.listing_type,p.construction_status,p.price_aed::text,p.bedrooms,p.bathrooms,p.area_sqft::float8,p.developer,p.price_from,p.community_size,p.latitude::float8,p.longitude::float8,p.unit_mix,p.highlights,p.seo_title,p.seo_description,p.featured,to_char(p.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"'),c.id::text,COALESCE(c.alt_text,'')`
 const coverJoin = ` LEFT JOIN LATERAL (SELECT m.id,m.alt_text FROM property_media m WHERE m.property_id=p.id AND m.media_type='image' ORDER BY m.is_cover DESC,m.sort_order,m.created_at LIMIT 1) c ON true`
 
 func scanPublic(row pgx.Row) (publicProperty, error) {
 	var p publicProperty
-	err := row.Scan(&p.ID, &p.Slug, &p.Reference, &p.Title, &p.Description, &p.Emirate, &p.Community, &p.Category, &p.ListingType, &p.ConstructionStatus, &p.PriceAED, &p.Bedrooms, &p.Bathrooms, &p.AreaSqft, &p.Developer, &p.PriceFrom, &p.CommunitySize, &p.UnitMix, &p.Highlights, &p.SeoTitle, &p.SeoDescription, &p.Featured, &p.UpdatedAt, &p.CoverID, &p.CoverAlt)
+	err := row.Scan(&p.ID, &p.Slug, &p.Reference, &p.Title, &p.Description, &p.Emirate, &p.Community, &p.Category, &p.ListingType, &p.ConstructionStatus, &p.PriceAED, &p.Bedrooms, &p.Bathrooms, &p.AreaSqft, &p.Developer, &p.PriceFrom, &p.CommunitySize, &p.Latitude, &p.Longitude, &p.UnitMix, &p.Highlights, &p.SeoTitle, &p.SeoDescription, &p.Featured, &p.UpdatedAt, &p.CoverID, &p.CoverAlt)
 	return p, err
 }
 

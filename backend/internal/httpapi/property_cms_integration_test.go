@@ -124,3 +124,37 @@ func TestIntegrationPropertyLifecycle(t *testing.T) {
 }
 
 func mustJSON(v any) string { b, _ := json.Marshal(v); return string(b) }
+
+func TestIntegrationPropertyLocation(t *testing.T) {
+	t.Setenv("MEDIA_DIR", t.TempDir())
+	a := integrationAPI(t)
+	h := a.Handler()
+	manager := staffLogin(t, a, "manager")
+	peer := "198.51.100.72"
+	stamp := time.Now().Format("150405000000")
+	slug := "qa-test-pin-" + stamp
+	base := `{"slug":"` + slug + `","reference_code":"QA-P-` + stamp + `","title":"QA-TEST Pin","description":"d","emirate":"Sharjah","community":"Um Fanain","category":"villa","listing_type":"sale","construction_status":"off_plan","price_aed":1000000`
+	for name, extra := range map[string]string{"half": `,"latitude":25.3}`, "outside": `,"latitude":40.1,"longitude":55.5}`} {
+		if code, out, _ := call(t, h, "POST", "/api/v1/admin/properties", base+extra, manager, peer); code != 422 {
+			t.Fatalf("%s pin got %d %v", name, code, out)
+		}
+	}
+	code, out, _ := call(t, h, "POST", "/api/v1/admin/properties", base+`,"latitude":25.3547,"longitude":55.5082}`, manager, peer)
+	if code != 201 {
+		t.Fatalf("create got %d %v", code, out)
+	}
+	id := out["id"].(string)
+	upload(t, a, id, manager, "Front")
+	if code, out, _ = call(t, h, "PATCH", "/api/v1/admin/properties/"+id+"/status", `{"status":"published"}`, manager, peer); code != 200 {
+		t.Fatalf("publish got %d %v", code, out)
+	}
+	if code, out, _ = call(t, h, "GET", "/api/v1/properties/"+slug, "", "", peer); code != 200 || out["latitude"] != 25.3547 || out["longitude"] != 55.5082 {
+		t.Fatalf("public pin got %d %v %v", code, out["latitude"], out["longitude"])
+	}
+	if code, out, _ = call(t, h, "PUT", "/api/v1/admin/properties/"+id, base+`,"latitude":null,"longitude":null}`, manager, peer); code != 200 {
+		t.Fatalf("clear pin got %d %v", code, out)
+	}
+	if _, out, _ = call(t, h, "GET", "/api/v1/properties/"+slug, "", "", peer); out["latitude"] != nil {
+		t.Fatalf("pin not cleared: %v", out["latitude"])
+	}
+}
