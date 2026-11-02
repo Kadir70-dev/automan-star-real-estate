@@ -48,7 +48,7 @@ export default function PropertyWizard({editId,initialStep=0,editable,onClose,on
  useEffect(()=>{document.querySelector('.pm-steps button.active')?.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})},[step]);
  useEffect(()=>{const warn=(e:BeforeUnloadEvent)=>{if(dirty)e.preventDefault()};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirty]);
 
- const set=<K extends keyof PropertyForm>(k:K,v:PropertyForm[K])=>{setForm(f=>({...f,[k]:v,...(k==='title'&&!slugTouched?{slug:slugify(String(v))}:{})}));setErrors(e=>({...e,[k]:undefined}))};
+ const set=<K extends keyof PropertyForm>(k:K,v:PropertyForm[K])=>{setForm(f=>({...f,[k]:v,...(k==='title'&&!slugTouched&&!id?{slug:slugify(String(v))}:{})}));setErrors(e=>({...e,[k]:undefined}))};
  const field=(k:keyof PropertyForm)=>({id:'pf-'+k,'aria-invalid':!!errors[k]||undefined,'aria-describedby':errors[k]?'pf-'+k+'-err':undefined});
  const err=(k:keyof PropertyForm)=>errors[k]&&<span className="pm-field-error" id={'pf-'+k+'-err'}>{errors[k]}</span>;
 
