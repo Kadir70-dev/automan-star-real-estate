@@ -5,8 +5,8 @@ import ArchitecturalStory from '@/components/ArchitecturalStory';
 import Hero from '@/components/Hero';
 import EntranceDoor from '@/components/EntranceDoor';
 import PropertyCard from '@/components/PropertyCard';
-import ProjectCard from '@/components/ProjectCard';
-import {PROJECTS} from '@/lib/projects';
+import ListingCard from '@/components/ListingCard';
+import {getLiveProperties} from '@/lib/live-properties';
 import {communities,properties} from '@/lib/data';
 import {LEADERSHIP} from '@/lib/leadership';
 import './home.css';
@@ -29,7 +29,9 @@ const services=[
  {key:'commercial',href:'/commercial',title:'Commercial',copy:'Offices and retail units for owner-occupiers and investors.'},
 ];
 
-export default async function Home(){const cms=await getCms("home");return <main className="home">
+export const dynamic='force-dynamic';
+
+export default async function Home(){const [cms,{data}]=await Promise.all([getCms("home"),getLiveProperties()]);const live=data.filter(p=>p.listing_type!=='rent').slice(0,3);return <main className="home">
  <EntranceDoor/>
  <Hero cms={cms}/>
  <ArchitecturalStory cms={cms}/>
@@ -40,8 +42,8 @@ export default async function Home(){const cms=await getCms("home");return <main
     <h2 id="collection-title" data-cms-field="collection.title">{cmsText(cms,'collection.title','A preview of the collection')}</h2>
     <Link href="/properties" className="ds-link" data-cms-field="collection.cta">{cmsText(cms,'collection.cta','See all properties')}</Link>
    </div>
-   <div className="home-cards">{PROJECTS.slice(0,3).map((p,i)=><ProjectCard project={p} priority={i===0} key={p.slug}/>)}{properties.filter(p=>p.featured).slice(0,Math.max(0,3-PROJECTS.length)).map((p,i)=><PropertyCard property={p} index={i+PROJECTS.length} key={p.id}/>)}</div>
-   <p className="home-note" data-cms-field="collection.note">{cmsText(cms,'collection.note','Azizi Florence is a live off-plan project; cards marked “Concept listing” are for illustration only. Verified listings are published on the properties page as they become available.')}</p>
+   <div className="home-cards">{live.map((p,i)=><ListingCard item={p} priority={i===0} key={p.id}/>)}{properties.filter(p=>p.featured).slice(0,3-live.length).map((p,i)=><PropertyCard property={p} index={i+live.length} key={p.id}/>)}</div>
+   <p className="home-note" data-cms-field="collection.note">{cmsText(cms,'collection.note','Cards marked “Concept listing” are for illustration only. Verified listings are published on the properties page as they become available.')}</p>
   </div>
  </section>
 

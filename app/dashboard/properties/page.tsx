@@ -1,2 +1,3 @@
-import RealPropertyAdmin from '@/components/RealPropertyAdmin';
-export default function Page(){return <RealPropertyAdmin/>}
+import {redirect} from 'next/navigation';
+// Listings are managed in the property manager (wizard, photos, trash).
+export default function Page(){redirect('/admin/properties')}

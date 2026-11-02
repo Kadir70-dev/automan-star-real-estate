@@ -2,10 +2,10 @@
 import Image from 'next/image';
 import {useEffect,useState} from 'react';
 import {ChevronLeft,ChevronRight,X,Maximize2} from 'lucide-react';
-import type {ProjectImage} from '@/lib/projects';
+export type GalleryImage={src:string;alt:string};
 
 // Cover + full thumbnail grid + keyboard lightbox, so every image is reachable.
-export default function ProjectGallery({images,title}:{images:ProjectImage[];title:string}){
+export default function ListingGallery({images,title}:{images:GalleryImage[];title:string}){
  const [active,setActive]=useState<number|null>(null);
  const n=images.length;
  useEffect(()=>{

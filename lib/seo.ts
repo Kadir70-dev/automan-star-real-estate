@@ -18,7 +18,7 @@ export const BUSINESS={
 export const OG_IMAGE={url:'/og-image.jpg',width:1200,height:630,alt:'Automan Star Real Estate, Business Bay, Dubai'};
 
 // Per-page metadata with a canonical URL and matching Open Graph/Twitter tags.
-export function pageMetadata({path,title,description,socialTitle,image=OG_IMAGE}:{path:string;title:string;description:string;socialTitle?:string;image?:typeof OG_IMAGE}):Metadata{
+export function pageMetadata({path,title,description,socialTitle,image=OG_IMAGE}:{path:string;title:string;description:string;socialTitle?:string;image?:{url:string;width?:number;height?:number;alt:string}}):Metadata{
  const og=socialTitle||`${title} | ${BUSINESS.name}`;
  return {
   title,description,

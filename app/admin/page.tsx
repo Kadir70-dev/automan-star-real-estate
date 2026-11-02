@@ -85,13 +85,13 @@ export default function AdminStudio(){
   {error&&<p className="st-error" role="alert">{error}</p>}
   <Link href="/">← Back to website</Link>
  </form></main>;
- if(staff.role!=='admin')return <main className="studio st-center"><div className="st-login"><h1>Access restricted</h1><p className="st-muted">This account cannot edit website content. Leads and properties are in the staff dashboard.</p><Link className="st-pill active" href="/dashboard">Open staff dashboard</Link><button type="button" onClick={logout}>Logout</button></div></main>;
+ if(staff.role!=='admin')return <main className="studio st-center"><div className="st-login"><h1>Access restricted</h1><p className="st-muted">This account cannot edit website pages. You can manage property listings.</p><Link className="st-pill active" href="/admin/properties">Open property manager</Link><Link className="st-pill" href="/dashboard/leads">Enquiries</Link><button type="button" onClick={logout}>Logout</button></div></main>;
 
  return <main className="studio">
   <div className="st-wrap">
    <header className="st-top">
     <strong>AUTOMAN STAR <span>· Studio</span></strong>
-    <nav><Link href="/" target="_blank">View website ↗</Link><Link href="/dashboard/properties">Properties &amp; CRM ↗</Link><button type="button" className="st-logout" onClick={logout}>Logout</button></nav>
+    <nav><Link href="/" target="_blank">View website ↗</Link><Link href="/admin/properties">Properties</Link><Link href="/dashboard/leads">Enquiries ↗</Link><button type="button" className="st-logout" onClick={logout}>Logout</button></nav>
    </header>
    <nav className="st-pills" aria-label="Website pages and sections">
     <div className="st-page-row">

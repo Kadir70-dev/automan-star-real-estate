@@ -2,11 +2,11 @@ import type {MetadataRoute} from 'next';
 import {SITE_URL} from '@/lib/seo';
 import {getLiveProperties} from '@/lib/live-properties';
 import {getCms} from '@/lib/cms';
-import {PROJECTS,projectPath} from '@/lib/projects';
+import {mediaUrl} from '@/lib/live-properties';
 // Public, indexable, canonical pages only. Demo/concept listings, the team
 // dashboard, saved and compare views are deliberately excluded.
 const PAGES:[path:string,priority:number][]=[['/',1],['/properties',0.9],['/buy',0.9],['/off-plan',0.9],['/commercial',0.8],['/about',0.7],['/contact',0.7],['/experience',0.5],['/privacy',0.2]];
-export const revalidate=3600;
+export const dynamic='force-dynamic';
 export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const indexable=await Promise.all(PAGES.map(async([path,priority])=>{
   const slug=path==='/'?'home':path.slice(1);
@@ -17,7 +17,6 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const pages=indexable.filter((p):p is NonNullable<typeof p>=>p!==null);
  // Published listings from the property API; absent when the API is offline.
  const {data}=await getLiveProperties();
- const listings=data.filter(p=>p.slug&&p.listing_type!=='rent').map(p=>({url:`${SITE_URL}/properties/${encodeURIComponent(p.slug)}`,changeFrequency:'weekly' as const,priority:0.6}));
- const projects=PROJECTS.map(p=>({url:`${SITE_URL}${projectPath(p)}`,changeFrequency:'weekly' as const,priority:0.8,images:p.gallery.map(i=>`${SITE_URL}${i.src}`)}));
- return [...pages,...projects,...listings.filter(l=>!projects.some(p=>p.url===l.url))];
+ const listings=data.filter(p=>p.slug&&p.listing_type!=='rent').map(p=>({url:`${SITE_URL}/properties/${encodeURIComponent(p.slug)}`,changeFrequency:'weekly' as const,priority:p.featured?0.8:0.6,...(p.updated_at?{lastModified:p.updated_at}:{}),...(p.cover_id?{images:[`${SITE_URL}${mediaUrl(p.cover_id)}`]}:{})}));
+ return [...pages,...listings];
 }
