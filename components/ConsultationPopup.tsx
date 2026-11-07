@@ -2,8 +2,9 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {ArrowUpRight,Check,X} from 'lucide-react';
+import {ArrowUpRight,Check,MessageCircle,X} from 'lucide-react';
 import {COUNTRIES,INTERESTS,validateLead,type LeadErrors,type LeadInput} from '@/lib/consultation-lead';
+import {enquiryWhatsAppHref,openWhatsApp} from '@/lib/whatsapp-link';
 
 const SEEN_KEY='automan-consultation-popup-seen',OPEN_DELAY_MS=2000,ANIM_MS=300;
 const blank:LeadInput={name:'',email:'',country:'AE',phone:'',interest:'',consent:false};
@@ -87,6 +88,12 @@ export default function ConsultationPopup(){
   const r=validateLead(form);setErrors(e=>({...e,[key]:r.ok?undefined:r.errors[key]}));
  }
 
+ function waHref(){
+  const dial=COUNTRIES.find(c=>c.iso===form.country)?.dial;
+  return enquiryWhatsAppHref({name:form.name,email:form.email,phone:dial?`+${dial} ${form.phone}`:form.phone,
+   topic:form.interest,message:'Free private consultation request',page:window.location.href});
+ }
+
  async function submit(e:React.FormEvent){
   e.preventDefault();
   if(sending.current)return;
@@ -103,7 +110,7 @@ export default function ConsultationPopup(){
     body:JSON.stringify({...form,company:honeypot.current?.value||'',elapsedMs:Date.now()-openedAt.current,sourceUrl:window.location.href})});
    let body:{ok?:boolean;error?:string;fields?:LeadErrors}={};
    try{body=await res.json()}catch{}
-   if(res.ok&&body.ok){setStatus('success');return}
+   if(res.ok&&body.ok){setStatus('success');openWhatsApp(waHref());return}
    if(body.fields)setErrors(body.fields);
    setServerError(body.error||'We could not submit your request. Please try again.');
    setStatus('idle');
@@ -132,8 +139,9 @@ export default function ConsultationPopup(){
     {status==='success'?<div className="cp-success" role="status" aria-live="polite">
      <span className="cp-success-icon" aria-hidden="true"><Check size={26}/></span>
      <h3>Thank you, {form.name.split(' ')[0]}.</h3>
-     <p>Your consultation request has been received. A member of our team will contact you.</p>
-     <button type="button" className="cp-submit" onClick={close}>CONTINUE BROWSING</button>
+     <p>Your consultation request has been received. Send it on WhatsApp for a faster reply from our team.</p>
+     <a className="cp-submit cp-whatsapp" href={waHref()} target="_blank" rel="noopener noreferrer"><MessageCircle size={17} aria-hidden="true"/> Send on WhatsApp</a>
+     <button type="button" className="cp-continue" onClick={close}>Continue browsing</button>
     </div>:
     <form className="cp-form" onSubmit={submit} noValidate>
      <label htmlFor="cp-name">Full Name</label>
@@ -162,7 +170,7 @@ export default function ConsultationPopup(){
       <span>I agree to be contacted by Automan Star Real Estate about my enquiry and accept the <Link href="/privacy" target="_blank" rel="noopener">Privacy Policy</Link>.</span>
      </label>
      {msg('consent')}
-     {serverError&&<p className="cp-server-error" role="alert">{serverError}</p>}
+     {serverError&&<p className="cp-server-error" role="alert">{serverError} You can also <a href={waHref()} target="_blank" rel="noopener noreferrer">message us on WhatsApp</a>.</p>}
      <button type="submit" className="cp-submit" disabled={status==='sending'} aria-busy={status==='sending'}>
       {status==='sending'?<><span className="cp-spinner" aria-hidden="true"/>SENDING…</>:<>Book My Consultation <ArrowUpRight size={17}/></>}
      </button>
