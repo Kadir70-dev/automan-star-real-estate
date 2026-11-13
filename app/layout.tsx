@@ -5,10 +5,12 @@ import type { Metadata, Viewport } from 'next';
 import { Bodoni_Moda, Manrope } from 'next/font/google';
 import './globals.css';
 import './design-system.css';
+import './buyer-tools.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConsultationPopup from '@/components/ConsultationPopup';
 import {BUSINESS,OG_IMAGE,SITE_URL,jsonLdHtml,siteJsonLd} from '@/lib/seo';
+import {getRates} from '@/lib/currency';
 const serif=Bodoni_Moda({subsets:['latin'],weight:['400','500'],style:['normal','italic'],variable:'--font-serif',display:'swap'});
 const sans=Manrope({subsets:['latin'],weight:['400','500','600','700'],variable:'--font-sans',display:'swap'});
 const baseMetadata:Metadata={
@@ -37,4 +39,4 @@ export async function generateMetadata():Promise<Metadata>{
 const doorBootstrap="(function(){var seen=false;try{seen=sessionStorage.getItem('automan-door-entrance-v1')==='1'}catch(e){};if(seen||window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-automan-door-skip','1')}})();";
 
 export const viewport:Viewport={themeColor:'#0f1b20',viewportFit:'cover'};
-export default async function RootLayout({children}:{children:React.ReactNode}){const site=await getCms('site');return <html lang="en-AE" suppressHydrationWarning className={`${serif.variable} ${sans.variable}`}><body><script dangerouslySetInnerHTML={{__html:doorBootstrap}}/><noscript><style>{".as-entrance{display:none!important}"}</style></noscript><script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd(site.fields))}/><SiteChrome site={site}>{children}</SiteChrome></body></html>}
+export default async function RootLayout({children}:{children:React.ReactNode}){const [site,fx]=await Promise.all([getCms('site'),getRates()]);return <html lang="en-AE" suppressHydrationWarning className={`${serif.variable} ${sans.variable}`}><body><script dangerouslySetInnerHTML={{__html:doorBootstrap}}/><noscript><style>{".as-entrance{display:none!important}"}</style></noscript><script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd(site.fields))}/><SiteChrome site={site} rates={fx.rates} live={fx.live}>{children}</SiteChrome></body></html>}

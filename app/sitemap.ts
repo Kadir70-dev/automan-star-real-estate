@@ -3,9 +3,10 @@ import {SITE_URL} from '@/lib/seo';
 import {getLiveProperties} from '@/lib/live-properties';
 import {getCms} from '@/lib/cms';
 import {mediaUrl} from '@/lib/live-properties';
+import {NEIGHBOURHOODS} from '@/lib/neighbourhoods';
 // Public, indexable, canonical pages only. Demo/concept listings, the team
 // dashboard, saved and compare views are deliberately excluded.
-const PAGES:[path:string,priority:number][]=[['/',1],['/properties',0.9],['/buy',0.9],['/off-plan',0.9],['/commercial',0.8],['/about',0.7],['/contact',0.7],['/experience',0.5],['/privacy',0.2]];
+const PAGES:[path:string,priority:number][]=[['/',1],['/properties',0.9],['/buy',0.9],['/off-plan',0.9],['/commercial',0.8],['/about',0.7],['/contact',0.7],['/experience',0.5],['/privacy',0.2],['/calculators',0.7],['/calculators/mortgage',0.7],['/calculators/property-costs',0.7],['/neighbourhoods',0.7]];
 export const dynamic='force-dynamic';
 export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const indexable=await Promise.all(PAGES.map(async([path,priority])=>{
@@ -18,5 +19,6 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  // Published listings from the property API; absent when the API is offline.
  const {data}=await getLiveProperties();
  const listings=data.filter(p=>p.slug&&p.listing_type!=='rent').map(p=>({url:`${SITE_URL}/properties/${encodeURIComponent(p.slug)}`,changeFrequency:'weekly' as const,priority:p.featured?0.8:0.6,...(p.updated_at?{lastModified:p.updated_at}:{}),...(p.cover_id?{images:[`${SITE_URL}${mediaUrl(p.cover_id)}`]}:{})}));
- return [...pages,...listings];
+ const guides=NEIGHBOURHOODS.map(n=>({url:`${SITE_URL}/neighbourhoods/${n.slug}`,changeFrequency:'monthly' as const,priority:0.6}));
+ return [...pages,...guides,...listings];
 }

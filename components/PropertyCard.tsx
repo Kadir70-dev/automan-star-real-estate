@@ -1,8 +1,9 @@
 'use client';
+import {Price} from '@/components/Prefs';
 import Link from 'next/link';
 import Image from 'next/image';
 import {Heart,BedDouble,Bath,Expand,GitCompareArrows} from 'lucide-react';
-import {Property,money} from '@/lib/data';
+import {Property} from '@/lib/data';
 import {useState,useEffect} from 'react';
 function readIds(key:string):number[]{try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return []}}
 function toggleId(key:string,id:number){const ids=readIds(key);const next=ids.includes(id)?ids.filter(x=>x!==id):[...ids,id];try{localStorage.setItem(key,JSON.stringify(next))}catch{}return next.includes(id)}
@@ -22,7 +23,7 @@ export default function PropertyCard({property,index=0}:{property:Property,index
   <div className="property-card-body">
    <p className="pc-meta">{property.community}, {property.type}</p>
    <h3><Link href={href} className="pc-link">{property.title}</Link></h3>
-   <p className="pc-price">{money(property.price)}{isDemo&&<small> illustrative</small>}</p>
+   <p className="pc-price"><Price aed={property.price}/>{isDemo&&<small> illustrative</small>}</p>
    <div className="specs"><span><BedDouble size={16} aria-hidden="true"/>{property.beds} beds</span><span><Bath size={16} aria-hidden="true"/>{property.baths} baths</span><span><Expand size={16} aria-hidden="true"/>{property.area.toLocaleString()} sq ft</span></div>
    <button aria-pressed={compared} onClick={()=>setCompared(toggleId('automan-compare',property.id))} className="pc-compare"><GitCompareArrows size={14} aria-hidden="true"/> {compared?'Remove from compare':'Add to compare'}</button>
   </div>

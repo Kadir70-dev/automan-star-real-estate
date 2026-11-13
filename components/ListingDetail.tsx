@@ -4,6 +4,7 @@ import Enquiry from '@/components/Enquiry';
 import ListingGallery from '@/components/ListingGallery';
 import ListingMap from '@/components/ListingMap';
 import {BUSINESS,SITE_URL,jsonLdHtml,breadcrumbJsonLd} from '@/lib/seo';
+import {PriceAlt} from '@/components/Prefs';
 import {type LivePropertyDetail,CATEGORY_LABEL,STATUS_LABEL,compactAed,isOffPlan,locationOf,mediaUrl} from '@/lib/live-properties';
 
 export function listingJsonLd(p:LivePropertyDetail){
@@ -66,7 +67,7 @@ export default function ListingDetail({p,whatsapp,preview=false}:{p:LiveProperty
     <aside className="detail-sidebar"><div className="enquiry-panel">
      <p className="eyebrow dark-eyebrow">REGISTER YOUR INTEREST</p>
      <span className="asking-label">{p.price_from?'STARTING FROM':'ASKING PRICE'}</span>
-     <strong className="detail-price">{compactAed(p.price_aed)}</strong>
+     <strong className="detail-price">{compactAed(p.price_aed)}</strong><PriceAlt aed={Number(p.price_aed)}/>
      <p>Ask our team about availability, floor plans and payment options for {p.title}.</p>
      {wa&&<a className="button project-whatsapp" href={wa} target="_blank" rel="noopener noreferrer"><MessageCircle size={17} aria-hidden="true"/> WHATSAPP ABOUT THIS PROPERTY</a>}
      {preview?<p className="st-muted">The enquiry form appears here on the live page.</p>:<Enquiry property={label} propertyId={p.id} defaultMessage={`I'm interested in ${p.title} (${locationOf(p)}). Please share availability, floor plans and the payment plan.`}/>}

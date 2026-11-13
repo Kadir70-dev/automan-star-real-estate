@@ -1,0 +1,68 @@
+// Neighbourhood guides. Facts are limited to landmarks, transport and housing mix that
+// are publicly established; no prices, yields or rankings are stated.
+export type Neighbourhood={
+ slug:string;name:string;emirate:string;tagline:string;intro:string;
+ homeTypes:string[];metro:string;
+ homes:string;lifestyle:string;transport:string;suits:string[];landmarks:string[];listing?:string;
+};
+
+export const NEIGHBOURHOODS:Neighbourhood[]=[
+ {slug:'downtown-dubai',homeTypes:['Apartments', 'Penthouses'],metro:'Red Line',name:'Downtown Dubai',emirate:'Dubai',tagline:'The city centre around Burj Khalifa',
+  intro:'Downtown Dubai is the master-planned district around Burj Khalifa and The Dubai Mall. It is the busiest, most central address in the city, with high-rise apartments, hotels and offices within walking distance of each other.',
+  homes:'Mostly apartments, from studios to large penthouses, plus a small number of low-rise residences in the Old Town area. Many towers were developed by Emaar.',
+  lifestyle:'Daily life centres on the Boulevard, The Dubai Mall, Dubai Opera and the Dubai Fountain. Restaurants, gyms and supermarkets are close at hand, and visitor footfall is high all year.',
+  transport:'Burj Khalifa/Dubai Mall Metro station on the Red Line, with quick road access to Sheikh Zayed Road, Al Khail Road and Business Bay.',
+  suits:['Professionals who want a walkable city lifestyle','Buyers interested in furnished or holiday-home letting','Second-home owners who want a central base'],
+  landmarks:['Burj Khalifa','The Dubai Mall','Dubai Opera','Dubai Fountain']},
+ {slug:'business-bay',homeTypes:['Apartments', 'Serviced residences'],metro:'Red Line',name:'Business Bay',emirate:'Dubai',tagline:'Offices and waterfront towers beside Downtown',
+  intro:'Business Bay sits along the Dubai Water Canal, directly next to Downtown Dubai. It mixes office towers, hotels and residential buildings, and is where the Automan Star office is based, in The Prism Tower.',
+  homes:'Apartments in high-rise towers, many with canal or Burj Khalifa views, plus serviced residences and a growing number of branded projects.',
+  lifestyle:'A working district by day with canal-side walking and cycling paths, cafés and hotel restaurants. Downtown and its malls are a short drive or walk away.',
+  transport:'Business Bay Metro station on the Red Line, with direct access to Sheikh Zayed Road, Al Khail Road and Al Asayel Street.',
+  suits:['People who work in the area or nearby DIFC and Downtown','Buyers looking for central apartments with canal views','Investors who want a business-district tenant base'],
+  landmarks:['Dubai Water Canal','Bay Avenue','The Opus','Marasi Drive']},
+ {slug:'dubai-marina',homeTypes:['Apartments', 'Penthouses'],metro:'Red Line + Tram',name:'Dubai Marina',emirate:'Dubai',tagline:'Waterfront towers around a man-made marina',
+  intro:'Dubai Marina is built around a man-made canal lined with residential towers, and sits beside Jumeirah Beach Residence (JBR) and the beach. It is one of the most established waterfront communities in the city.',
+  homes:'Apartments of every size in high-rise towers, from studios to penthouses, many with marina or sea views.',
+  lifestyle:'Marina Walk, the beach at JBR, yacht berths, Dubai Marina Mall and a wide choice of restaurants make it lively day and night.',
+  transport:'Red Line Metro stations along Sheikh Zayed Road, the Dubai Tram running through the community and connecting to the Palm Monorail.',
+  suits:['Buyers who want a beach and waterfront lifestyle','Young professionals and couples','Investors focused on rental demand in an established area'],
+  landmarks:['Marina Walk','JBR Beach','Dubai Marina Mall','Dubai Tram']},
+ {slug:'palm-jumeirah',homeTypes:['Villas', 'Apartments'],metro:'Palm Monorail',name:'Palm Jumeirah',emirate:'Dubai',tagline:'Beachfront villas and apartments on the island',
+  intro:'Palm Jumeirah is the palm-shaped man-made island off the Dubai coast. Villas line the fronds with private beach access, while the trunk and crescent hold apartment buildings, hotels and resorts.',
+  homes:'Signature and garden villas on the fronds, beachfront apartments along the trunk and crescent, and branded residences.',
+  lifestyle:'Private beaches, beach clubs, resort dining and the boardwalk on the crescent. It is quieter than the city centre while still close to Dubai Marina.',
+  transport:'The Palm Monorail runs along the trunk and links to the Dubai Tram; road access is via the trunk to Sheikh Zayed Road.',
+  suits:['Families who want a villa with beach access','Luxury and second-home buyers','Buyers seeking resort-style apartments'],
+  landmarks:['Atlantis The Palm','The Pointe','Palm West Beach','The Boardwalk']},
+ {slug:'dubai-hills-estate',homeTypes:['Villas', 'Townhouses', 'Apartments'],metro:'By road',name:'Dubai Hills Estate',emirate:'Dubai',tagline:'A green master community around a golf course',
+  intro:'Dubai Hills Estate is a large master-planned community built around an 18-hole championship golf course and a central park. It combines villa neighbourhoods with apartment buildings and its own mall.',
+  homes:'Villas and townhouses in gated sub-communities, and apartment buildings near the park and Dubai Hills Mall.',
+  lifestyle:'Parks, cycling and running tracks, the golf course, Dubai Hills Mall, schools and a hospital inside the community suit family life.',
+  transport:'Road access via Al Khail Road and Umm Suqeim Street, roughly between Downtown and Dubai Marina. There is no Metro station inside the community.',
+  suits:['Families who want space, parks and schools nearby','Buyers choosing between villas and apartments in one community','Golf and outdoor lovers'],
+  landmarks:['Dubai Hills Golf Club','Dubai Hills Mall','Dubai Hills Park','King’s College Hospital']},
+ {slug:'jumeirah-village-circle',homeTypes:['Apartments', 'Townhouses', 'Villas'],metro:'By road',name:'Jumeirah Village Circle (JVC)',emirate:'Dubai',tagline:'A central, community-style neighbourhood',
+  intro:'Jumeirah Village Circle is a circular community of low and mid-rise buildings, townhouses and villas, set between Al Khail Road and Sheikh Mohammed Bin Zayed Road. It is popular with buyers looking for space at accessible price points.',
+  homes:'Mainly apartments in mid-rise buildings, with townhouses and villas around the community, and many off-plan projects.',
+  lifestyle:'Neighbourhood parks, local retail and Circle Mall. It is calmer than the waterfront districts and largely residential.',
+  transport:'Road access to Al Khail Road and Sheikh Mohammed Bin Zayed Road, connecting to Dubai Marina, Al Barsha and Downtown. There is currently no Metro station.',
+  suits:['First-time buyers','Families wanting more space for the budget','Investors targeting long-term rentals'],
+  landmarks:['Circle Mall','JVC community parks','Al Khail Road','Sheikh Mohammed Bin Zayed Road']},
+ {slug:'dubai-creek-harbour',homeTypes:['Apartments'],metro:'By road',name:'Dubai Creek Harbour',emirate:'Dubai',tagline:'A new waterfront district on Dubai Creek',
+  intro:'Dubai Creek Harbour is a master-planned waterfront district by Emaar on Dubai Creek, next to the Ras Al Khor Wildlife Sanctuary. Much of it is still being built, so a large share of homes are sold off-plan.',
+  homes:'Apartments in waterfront towers, many with creek or skyline views, with new phases launching over time.',
+  lifestyle:'Creek-side promenades, parks and views across to Downtown Dubai, with retail and dining growing as the district completes.',
+  transport:'Road access via Ras Al Khor Road and Al Khail Road; Downtown Dubai and Dubai International Airport are a short drive away.',
+  suits:['Off-plan buyers planning several years ahead','Buyers who want waterfront living near the city centre','Investors comfortable with a developing district'],
+  landmarks:['Dubai Creek','Ras Al Khor Wildlife Sanctuary','Creek Marina','Creek Island']},
+ {slug:'um-fanain-sharjah',homeTypes:['Townhouses', 'Villas'],metro:'By road',name:'Um Fanain, Sharjah',emirate:'Sharjah',tagline:'Azizi Florence, next to Sharjah Sustainable City',
+  intro:'Um Fanain is an area of Sharjah next to Sharjah Sustainable City, on Mohammed Bin Zayed Road. It is home to Azizi Florence, a new villa and townhouse community by Azizi Developments.',
+  homes:'Azizi Florence offers 3 and 4 bedroom townhouses and premium 4, 5 and 6 bedroom villas around a large central park.',
+  lifestyle:'A low-rise, family-focused setting with parks, walking, jogging and cycling tracks planned within the community.',
+  transport:'Mohammed Bin Zayed Road links the area to Dubai and the rest of Sharjah, and Sharjah International Airport is nearby.',
+  suits:['Families looking for a villa or townhouse','Buyers who want an off-plan payment plan','Buyers comparing Sharjah with Dubai'],
+  landmarks:['Azizi Florence','Sharjah Sustainable City','Mohammed Bin Zayed Road','Sharjah International Airport'],listing:'/properties/azizi-florence'},
+];
+
+export const findNeighbourhood=(slug:string)=>NEIGHBOURHOODS.find(n=>n.slug===slug);
